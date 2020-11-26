@@ -22,28 +22,28 @@ yt.add_field(function = _ecr_incell,
              units = "erg", 
              name = "CR_energy_incell",
              sampling_type = "cell")
-#ts_p[0].add_field(function = _ecr_incell, 
-#             units = "erg", 
-#             name = "CR_energy_incell",
-#             sampling_type = "cell")
-
-#print(ts_p[0].field_list)
 
 def ECR_tot(dataset):
     ds = dataset
     return ds.all_data().quantities.total_quantity(["CR_energy_incell"])
 
-OUT = np.ones((3,len(ts_p))) # First row: Time, Second row: Proton, Third row: Electron
+# Store data in an np array
+# First row: Time, Second row: Proton, Third row: Electron
+OUT = np.ones((3,len(ts_p))) 
 OUT[0,:] = np.linspace(ts_p[0].current_time/31556926e6,ts_p[-1].current_time/31556926e6,len(ts_p))
 
+# Main Code
 for i in range(len(ts_p)):
-    print("Making Plot: {}/{}".format(i,len(ts_p)))
+    print("Making Plot: {}/{}".format(i+1,len(ts_p)))
     OUT[1,i] = ECR_tot(ts_p[i])
     OUT[2,i] = ECR_tot(ts_e[i])
 
+# Plotting setting
+rc_context({'mathtext.fontset': 'stix'})
 plt.plot(OUT[0,:], OUT[1,:], label="Proton Jet")
 plt.plot(OUT[0,:], OUT[2,:], label="Electron Jet")
 plt.legend()
 plt.xlabel("Time (Myr)")
 plt.ylabel("CR Energy (erg)")
-plt.show()
+plt.savefig("CREtot.png")
+#plt.show()
