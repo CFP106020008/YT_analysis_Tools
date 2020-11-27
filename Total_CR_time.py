@@ -38,8 +38,9 @@ for i in range(len(ts_p)):
     OUT[1,i] = ECR_tot(ts_p[i])
     OUT[2,i] = ECR_tot(ts_e[i])
 
+np.save("CREtot.npy",OUT)
+
 # Plotting setting
-rc_context({'mathtext.fontset': 'stix'})
 plt.plot(OUT[0,:], OUT[1,:], label="Proton Jet")
 plt.plot(OUT[0,:], OUT[2,:], label="Electron Jet")
 plt.legend()
