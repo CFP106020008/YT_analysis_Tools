@@ -8,19 +8,19 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 #Set the parameters
 Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
 Folder_e = "./AGNCRe/crbub_hdf5_plt_cnt_*"
+Field = 'CR_energy_density'
 #Field = 'density'
-#Field = 'CR_energy_density'
 #Field = 'pressure'
-Field = 'temperature'
+#Field = 'temperature'
 CMAP = 'algae' #'dusk'
 FPS = 20
 #===========================#
-fig = plt.figure(figsize=(16,9))
+fig = plt.figure(figsize=(16,16))
 
 ts_p = yt.load(Folder_p) #Proton Jet dataset
 ts_e = yt.load(Folder_e) #Electron Jet dataset
 
-start_frame = 0
+start_frame = 1
 end_frame = min(len(ts_p),len(ts_e))
 
 fns = [ts_p, ts_e] # Total set of datas
@@ -52,10 +52,10 @@ pp = yt.SlicePlot(ts_p[start_frame],
                  ).set_cmap(field = Field, cmap=CMAP
                  )#.annotate_velocity(factor = 16,normalize=True)
 
-#pp.set_zlim(Field, 1e-40, 1e0) # For ecr
+pp.set_zlim(Field, 1e-15, 1e-5) # For ecr
 #pp.set_zlim(Field, 1e-27, 1e-24) # For den
 #pp.set_zlim(Field, 1e-11, 1e-8) # For pressure
-pp.set_zlim(Field, 1e7, 1e9) # For temp
+#pp.set_zlim(Field, 1e7, 1e9) # For temp
 plotp = pp.plots[Field]        
 plotp.figure = fig
 plotp.axes = grid[0].axes
@@ -71,19 +71,15 @@ pe = yt.SlicePlot(ts_e[start_frame],
                  ).set_cmap(field = Field, cmap=CMAP
                  )#.annotate_velocity(factor = 16,normalize=True)
 
-#pe.set_zlim(Field, 1e-40, 1e0) # For ecr
+pe.set_zlim(Field, 1e-15, 1e-5) # For ecr
 #pe.set_zlim(Field, 1e-27, 1e-24) # For den
 #pe.set_zlim(Field, 1e-11, 1e-8) # For pressure
-pe.set_zlim(Field, 1e7, 1e9) # For temp
+#pe.set_zlim(Field, 1e7, 1e9) # For temp
 plote = pe.plots[Field]        
 plote.figure = fig
 plote.axes = grid[1].axes
 plote.cax = grid.cbar_axes[1]
 pp._setup_plots()
-
-plt.title("Proton Jet / Electron Jet")
-
-#plt.savefig("./temp-store/{}_frame={:04d}.png".format(Field,j),dpi=300)
 
 def animate(i):
     print("Making Video: {}/{}".format(i+1,len(ts_p)))
@@ -91,7 +87,7 @@ def animate(i):
     pe._switch_ds(ts_e[i])
     grid[0].axes.set_title("Proton Jet", fontsize=20)
     grid[1].axes.set_title("Electron Jet", fontsize=20)
-    plt.suptitle("Time: {} Myr".format(ts_p[i].current_time/31556926e6))
+    fig.suptitle("Time: {:03.0f} Myr".format(float(ts_p[i].current_time/31556926e6)),fontsize=24)
 
 animation = FuncAnimation(fig = fig, 
                           func = animate, 
