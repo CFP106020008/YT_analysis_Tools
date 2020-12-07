@@ -31,19 +31,10 @@ yt.add_field(function = ecr,
              name = "CR_energy_density",
              sampling_type = "cell")
 
-fig, axes = plt.subplots(nrows=len(Fields), ncols=2, figsize=(8,8))
-'''
-fig = plt.figure()
-grid = AxesGrid(fig, (0.075,0.075,0.85,0.85),
-                nrows_ncols = (len(Fields), 2),
-                axes_pad = 1.0,
-                label_mode = "1",
-                share_all = True,
-                cbar_location="right",
-                cbar_mode="each",
-                cbar_size="3%",
-                cbar_pad="0%")
-'''
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8,4.5))
+plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.4)
+
+lines = []
 
 for i, jet in enumerate(fns):
     ds = jet[Frame]
@@ -52,19 +43,18 @@ for i, jet in enumerate(fns):
                            units = {'radius': 'kpc'},
                            logs = {'radius': False})
     for j, field in enumerate(Fields):
-        #grid[i+2*j].plot(rp.x.value, np.log10(rp[field].value))
-        axes[j,i].plot(rp.x.value, np.log10(rp[field].value))
-        axes[j,i].set_xlabel("Radius (kpc)")
-        axes[j,i].set_ylabel("{}\n(log({}))".format(field, unit[j]))
-        #if i == 0:
-        #    #grid[i+2*j].set_title("Proton Jet: {}".format(field))
-        #    axes[j,i].set_title("Proton Jet: {}".format(field))
-        #else:
-        #    axes[j,i].set_title("Electron Jet: {}".format(field))
-plt.tight_layout()
+        if i == 0:
+            l = axes[int(j/2),j%2].plot(rp.x.value, np.log10(rp[field].value), label="Proton Jet")
+        else:
+            l = axes[int(j/2),j%2].plot(rp.x.value, np.log10(rp[field].value), label="Electron Jet")
+        axes[int(j/2),j%2].set_xlabel("Radius (kpc)")
+        axes[int(j/2),j%2].set_ylabel("{}\n(log({}))".format(field, unit[j]))
+        lines.append(l)
+
+LABEL = ["Proton Jet", "Electron Jet"]
+#handles, labels = axes.get_legend_handles_labels()
+fig.legend(lines[:2], LABEL, loc='lower center')
+#plt.tight_layout()
+plt.suptitle("Time: {:03.0f} Myr".format(float(ts_p[Frame].current_time/31556926e6)))
 plt.savefig("Profiles_{:03.0f}_Myr.png".format(float(ts_p[Frame].current_time/31556926e6)), dpi=300)
 #plt.show()
-
-
-
-
