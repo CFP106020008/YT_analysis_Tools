@@ -8,12 +8,13 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 #Set the parameters
 Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
 Folder_e = "./AGNCRe/crbub_hdf5_plt_cnt_*"
+#Field = "crht"
 #Field = 'CR_energy_density'
 #Field = 'density'
 #Field = 'pressure'
-Field = 'temperature'
+#Field = 'temperature'
 CMAP = 'algae' #'dusk'
-FPS = 20
+FPS = 10
 #===========================#
 fig = plt.figure(figsize=(16,16))
 
@@ -32,7 +33,6 @@ yt.add_field(function = ecr,
              name = "CR_energy_density", 
              sampling_type = "cell")
 
-#fig = plt.figure(figsize=(16,9))
 rc_context({'mathtext.fontset': 'stix'})
 grid = AxesGrid(fig, (0.090,0.075,0.80,0.85),
                 nrows_ncols = (1, 2),
@@ -54,8 +54,9 @@ pp = yt.SlicePlot(ts_p[start_frame],
 
 #pp.set_zlim(Field, 1e-15, 1e-5) # For ecr
 #pp.set_zlim(Field, 1e-27, 1e-24) # For den
-#pp.set_zlim(Field, 1e-11, 1e-8) # For pressure
-pp.set_zlim(Field, 1e7, 1e9) # For temp
+pp.set_zlim(Field, 1e-11, 1e-8) # For pressure
+#pp.set_zlim(Field, 1e7, 1e9) # For temp
+#pp.set_zlim(Field, 1e-40, 1e-26) # For crht
 plotp = pp.plots[Field]        
 plotp.figure = fig
 plotp.axes = grid[0].axes
@@ -73,13 +74,14 @@ pe = yt.SlicePlot(ts_e[start_frame],
 
 #pe.set_zlim(Field, 1e-15, 1e-5) # For ecr
 #pe.set_zlim(Field, 1e-27, 1e-24) # For den
-#pe.set_zlim(Field, 1e-11, 1e-8) # For pressure
-pe.set_zlim(Field, 1e7, 1e9) # For temp
+pe.set_zlim(Field, 1e-11, 1e-8) # For pressure
+#pe.set_zlim(Field, 1e7, 1e9) # For temp
+#pe.set_zlim(Field, 1e-40, 1e-26) # For crht
 plote = pe.plots[Field]        
 plote.figure = fig
 plote.axes = grid[1].axes
 plote.cax = grid.cbar_axes[1]
-pp._setup_plots()
+pe._setup_plots()
 
 def animate(i):
     print("Making Video: {}/{}".format(i+1,len(ts_p)))
