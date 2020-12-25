@@ -6,6 +6,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib import rc_context
 from mpl_toolkits.axes_grid1 import AxesGrid
 import My_Plugin as M
+from matplotlib.animation import FuncAnimation
 
 #Set the parameters
 Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
@@ -19,12 +20,17 @@ CMAP = 'seismic'#'algae' #'dusk'
 Frames = [1,10,20,30,40,50]
 radius = 50
 center = [0,0,0]
+FPS = 10
+
 #===========================#
 
 ts_p = yt.load(Folder_p) #Proton Jet dataset
 ts_e = yt.load(Folder_e) #Electron Jet dataset
+start_frame = 1
+end_frame = min(len(ts_p),len(ts_e))
 
 fns = [ts_p, ts_e] # Total set of datas
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
  
 def Plot(frame):    
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
@@ -48,5 +54,18 @@ def Plot(frame):
     plt.savefig("HeatCool_Spherical_Profile_frame={}.png".format(frame), dpi=300)
     plt.close()
 
-for frame in Frames:
-    Plot(frame)
+#for frame in Frames:
+#    Plot(frame)
+
+def animate(i):
+    print("Making Video: {}/{}".format(i+1,len(ts_p)))
+    Plot(i)
+
+animation = FuncAnimation(fig = fig,
+                          func = animate,
+                          frames = range(start_frame,end_frame),
+                          interval = int(1000/FPS),
+                          save_count = 0
+                          )
+
+animation.save('HeatCoolProfile.mp4', dpi=300)
