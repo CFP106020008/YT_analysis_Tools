@@ -25,11 +25,11 @@ ts_p = yt.load(Folder_p) #Proton Jet dataset
 ts_e = yt.load(Folder_e) #Electron Jet dataset
 
 fns = [ts_p, ts_e] # Total set of datas
-
-for j, frame in enumerate(Frames):
+ 
+def Plot(frame):    
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
     #plt.subplots_adjust(left=0.05, bottom=0.2, right=0.89, top=0.9, wspace=0.1, hspace=0.4)
-    ds = ts_p[j]
+    ds = ts_p[frame]
     sphere = ds.sphere(center, (radius, "kpc"))
     P = yt.create_profile( sphere, 'radius', ['cooling_rate','crht'],
                            units = {'radius': 'kpc'},
@@ -47,3 +47,6 @@ for j, frame in enumerate(Frames):
     #plt.suptitle("Time: {:03.0f} Myr".format(float(ts_p[Frame].current_time/31556926e6)))
     plt.savefig("HeatCool_Spherical_Profile_frame={}.png".format(frame), dpi=300)
     plt.close()
+
+for frame in Frames:
+    Plot(frame)
