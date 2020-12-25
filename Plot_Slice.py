@@ -14,7 +14,7 @@ Field = 'Heating/Cooling'
 #Field = 'density'
 #Field = 'pressure'
 #Field = 'temperature'
-CMAP = 'algae' #'dusk'
+CMAP = 'seismic'#'algae' #'dusk'
 Frames = [1,10,20,30,40,50]
 #===========================#
 

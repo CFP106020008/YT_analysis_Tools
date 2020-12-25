@@ -4,12 +4,12 @@ from yt import YTQuantity
 from yt.utilities.physical_constants import kb
 
 def Zlim(Field):
-    ZLIMS = {'Heating/Cooling':[1e-2, 1e2],
+    ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
              'CR_energy_density':[1e-15, 1e-5],
-             'Density':[1e-27, 1e-24],
-             'Temperature':[1e7, 1e9],
+             'density':[1e-27, 1e-24],
+             'temperature':[1e7, 1e9],
              'crht':[1e-40, 1e-26],
-             'Pressure':[1e-11, 1e-8]
+             'pressure':[1e-11, 1e-8]
             }
     return ZLIMS[Field]
 
