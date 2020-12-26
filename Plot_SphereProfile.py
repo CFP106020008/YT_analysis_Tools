@@ -21,7 +21,7 @@ Frames = [1,10,20,30,40,50]
 radius = 50
 center = [0,0,0]
 FPS = 10
-
+ANIME = False
 #===========================#
 
 ts_p = yt.load(Folder_p) #Proton Jet dataset
@@ -32,40 +32,45 @@ end_frame = min(len(ts_p),len(ts_e))
 fns = [ts_p, ts_e] # Total set of datas
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
  
-def Plot(frame):    
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
-    #plt.subplots_adjust(left=0.05, bottom=0.2, right=0.89, top=0.9, wspace=0.1, hspace=0.4)
+def Plot(frame, fig, ax):    
     ds = ts_p[frame]
     sphere = ds.sphere(center, (radius, "kpc"))
     P = yt.create_profile( sphere, 'radius', ['cooling_rate','crht'],
                            units = {'radius': 'kpc'},
                            logs = {'radius': False})
     
-    c = ax.semilogy(P.x.value, P['cooling_rate'].value, label="Cooling Rate", color='b')
-    h = ax.semilogy(P.x.value, P['crht'].value, label="Heating Rate", color='r')
-    ax.set_xlabel("Radius (kpc)")
-    ax.set_title("Time: {:03.0f} Myr".format(float(ts_p[frame].current_time/31556926e6)))
-    ax.set_ylabel(r'$(erg/s/cm^3)$')
-    ax.set_ylim([1e-28,1e-20])
-    plt.legend()
-    #handles, labels = ax.get_legend_handles_labels()
-    #fig.legend(handles, labels)#, loc='center right')
-    #plt.suptitle("Time: {:03.0f} Myr".format(float(ts_p[Frame].current_time/31556926e6)))
-    plt.savefig("HeatCool_Spherical_Profile_frame={}.png".format(frame), dpi=300)
-    plt.close()
+    if ANIEM:
 
-#for frame in Frames:
-#    Plot(frame)
+    else:
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
+        #plt.subplots_adjust(left=0.05, bottom=0.2, right=0.89, top=0.9, wspace=0.1, hspace=0.4) 
+        c = ax.semilogy(P.x.value, P['cooling_rate'].value, label="Cooling Rate", color='b')
+        h = ax.semilogy(P.x.value, P['crht'].value, label="Heating Rate", color='r')
+        ax.set_xlabel("Radius (kpc)")
+        ax.set_title("Time: {:03.0f} Myr".format(float(ts_p[frame].current_time/31556926e6)))
+        ax.set_ylabel(r'$(erg/s/cm^3)$')
+        ax.set_ylim([1e-28,1e-20])
+        plt.legend()
+        #handles, labels = ax.get_legend_handles_labels()
+        #fig.legend(handles, labels)#, loc='center right')
+        #plt.suptitle("Time: {:03.0f} Myr".format(float(ts_p[Frame].current_time/31556926e6)))
+        plt.savefig("HeatCool_Spherical_Profile_frame={}.png".format(frame), dpi=300)
+        plt.clf()
 
-def animate(i):
-    print("Making Video: {}/{}".format(i+1,len(ts_p)))
-    Plot(i)
+if ANIEM:
+    def animate(i):
+        print("Making Video: {}/{}".format(i+1,len(ts_p)))
+        Plot(i, fig, ax)
 
-animation = FuncAnimation(fig = fig,
-                          func = animate,
-                          frames = range(start_frame,end_frame),
-                          interval = int(1000/FPS),
-                          save_count = 0
-                          )
+    animation = FuncAnimation(fig = fig,
+                              func = animate,
+                              frames = range(start_frame,end_frame),
+                              interval = int(1000/FPS),
+                              save_count = 0
+                              )
+    animation.save('HeatCoolProfile.mp4', dpi=300)
+else:
+    for frame in Frames:
+        Plot(frame, fig, ax)
 
-animation.save('HeatCoolProfile.mp4', dpi=300)
+
