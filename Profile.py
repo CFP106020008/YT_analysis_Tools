@@ -4,6 +4,7 @@ import yt.units as u
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
 from matplotlib import rc_context
+import My_Plugin as M
 
 #Set the parameters
 Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
@@ -21,16 +22,6 @@ ts_p = yt.load(Folder_p) #Proton Jet dataset
 ts_e = yt.load(Folder_e) #Electron Jet dataset
 
 fns = [ts_p, ts_e]
-
-# Define a new field that is the CR energy in each cell
-def ecr(field, data):
-    return data["density"]*data["cray"]*yt.YTQuantity(1,"erg/g")
-
-# Add field
-yt.add_field(function = ecr, 
-             units = "erg/cm**3", 
-             name = "CR_energy_density",
-             sampling_type = "cell")
 
 def FourFig(Frame, height):
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8,4.5))

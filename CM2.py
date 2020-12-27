@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib import rc_context
 from mpl_toolkits.axes_grid1 import AxesGrid
+import My_Plugin as M
 
 #Set the parameters
 Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
@@ -25,15 +26,9 @@ start_frame = 1
 end_frame = min(len(ts_p),len(ts_e))
 
 fns = [ts_p, ts_e] # Total set of datas
-def ecr(field, data):
-    return data["density"]*data["cray"]*yt.YTQuantity(1,"erg/g")
-
-yt.add_field(function = ecr, 
-             units = "erg/cm**3", 
-             name = "CR_energy_density", 
-             sampling_type = "cell")
 
 rc_context({'mathtext.fontset': 'stix'})
+
 grid = AxesGrid(fig, (0.090,0.075,0.80,0.85),
                 nrows_ncols = (1, 2),
                 axes_pad = 0.5,
@@ -52,11 +47,7 @@ pp = yt.SlicePlot(ts_p[start_frame],
                  ).set_cmap(field = Field, cmap=CMAP
                  )#.annotate_velocity(factor = 16,normalize=True)
 
-#pp.set_zlim(Field, 1e-15, 1e-5) # For ecr
-#pp.set_zlim(Field, 1e-27, 1e-24) # For den
-pp.set_zlim(Field, 1e-11, 1e-8) # For pressure
-#pp.set_zlim(Field, 1e7, 1e9) # For temp
-#pp.set_zlim(Field, 1e-40, 1e-26) # For crht
+pp.set_zlim(Field, M.Zlim(Field)[0], M.Zlim(Field)[1])
 plotp = pp.plots[Field]        
 plotp.figure = fig
 plotp.axes = grid[0].axes
@@ -72,11 +63,7 @@ pe = yt.SlicePlot(ts_e[start_frame],
                  ).set_cmap(field = Field, cmap=CMAP
                  )#.annotate_velocity(factor = 16,normalize=True)
 
-#pe.set_zlim(Field, 1e-15, 1e-5) # For ecr
-#pe.set_zlim(Field, 1e-27, 1e-24) # For den
-pe.set_zlim(Field, 1e-11, 1e-8) # For pressure
-#pe.set_zlim(Field, 1e7, 1e9) # For temp
-#pe.set_zlim(Field, 1e-40, 1e-26) # For crht
+pe.set_zlim(Field, M.Zlim(Field)[0], M.Zlim(Field)[1])
 plote = pe.plots[Field]        
 plote.figure = fig
 plote.axes = grid[1].axes

@@ -90,6 +90,21 @@ yt.add_field(   ("gas","Heating/Cooling"),
                 units="",
                 sampling_type = "cell")
 
+def ECR_tot(dataset):
+    ds = dataset
+    return ds.all_data().quantities.total_quantity(["CR_energy_incell"])
+
+#=========================================================#
+
+def Ek_tot(dataset):
+    ds = dataset
+    return ds.all_data().quantities.total_quantity(["Kinetic_Energy"])
+
+#=========================================================#
+
+def Eth_tot(dataset):
+    ds = dataset
+    return ds.all_data().quantities.total_quantity(["Thermal_Energy"])
 
 
 
