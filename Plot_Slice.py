@@ -7,15 +7,17 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 import My_Plugin as M
 
 #Set the parameters
-Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
-Folder_e = "./AGNCRe/crbub_hdf5_plt_cnt_*"
-Field = 'Heating/Cooling'
-#Field = 'CR_energy_density'
-#Field = 'density'
-#Field = 'pressure'
-#Field = 'temperature'
-CMAP = 'seismic'#'algae' #'dusk'
+Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
+Folder_e = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
+Fields = {  'crht': 1,
+            'CR_energy_density': 1,
+            'density': 1,
+            'pressure': 1,
+            'temperature': 1,
+            'csht': 1}
+CMAP = 'algae' #'dusk'
 Frames = [1,10,20,30,40,50]
+#Frames = [3]
 #===========================#
 
 ts_p = yt.load(Folder_p) #Proton Jet dataset
@@ -25,7 +27,7 @@ fns = [ts_p, ts_e] # Total set of datas
 
 def Plot(Frame,ts_p,ts_e):
     
-    fig = plt.figure(figsize=(64,16))
+    fig = plt.figure(figsize=(16,16))
     rc_context({'mathtext.fontset': 'stix'})
     grid = AxesGrid(fig, 
                     (0.090,0.015,0.80,0.9),
@@ -73,8 +75,12 @@ def Plot(Frame,ts_p,ts_e):
     grid[1].axes.set_title("Electron Jet", fontsize=20)
     fig.suptitle("Time: {:03.0f} Myr".format(float(ts_p[i].current_time/31556926e6)),fontsize=24, y=0.80)
 
-    plt.savefig("Frame={}.png".format(Frame), dpi=300, bbox='tight')
+    plt.savefig("{}_Frame={}.png".format(Field,Frame), dpi=300, bbox='tight')
     plt.close()
 
-for i in Frames:
-    Plot(i,ts_p,ts_e)
+for key in Fields:
+    if Fields[key] ==1:
+        Field = key
+        for i in Frames:
+            Plot(i,ts_p,ts_e)
+

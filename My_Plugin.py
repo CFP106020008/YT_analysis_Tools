@@ -9,7 +9,8 @@ def Zlim(Field):
              'density':[1e-27, 1e-24],
              'temperature':[1e7, 1e9],
              'crht':[1e-40, 1e-26],
-             'pressure':[1e-11, 1e-8]
+             'pressure':[1e-11, 1e-8],
+             'csht':[1e-40, 1e-26]
             }
     return ZLIMS[Field]
 
