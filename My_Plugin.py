@@ -8,16 +8,26 @@ def Zlim(Field):
              'CR_energy_density':[1e-15, 1e-5],
              'density':[1e-27, 1e-24],
              'temperature':[1e7, 1e9],
-             'crht':[1e-40, 1e-26],
+             'crht':[1e-29, 1e-25],
              'pressure':[1e-11, 1e-8],
-             'csht':[1e-40, 1e-26]
+             'csht':[1e-29, 1e-25],
+             'mag_strength':[1e-7,1e-5]
             }
     return ZLIMS[Field]
 
 #=========================================================#
 
+def _mag_strength(field, data):
+    return np.sqrt(data["magx"]**2 + data["magy"]**2 + data["magz"]**2)
+yt.add_field(   ("gas","mag_strength"), 
+                function=_mag_strength, 
+                units="gauss",
+                sampling_type = "cell")
+
+#=========================================================#
+
 def _coolingRate(field, data):
-  return np.maximum(1.5*data["pressure"]/data["cooling_time"],1.e-30*YTQuantity(1.,"erg/s/cm**3")) #this includes setting a minimum value
+    return np.maximum(1.5*data["pressure"]/data["cooling_time"],1.e-30*YTQuantity(1.,"erg/s/cm**3")) #this includes setting a minimum value
 yt.add_field(   ("gas","cooling_rate"), 
                 function=_coolingRate, 
                 units="erg/s/cm**3",
@@ -63,7 +73,7 @@ yt.add_field(function = _ecr_incell,
 
 # Thermal Energy in cell
 def _eth_incell(field, data):
-    return (data["pres"]*1.5 - data["density"]*data["cray"]*yt.YTQuantity(1,"erg/g")*0.5)*data["cell_volume"]
+    return (data["pres"]*1.5-data["density"]*data["cray"]*yt.YTQuantity(1,"erg/g")*0.5)*data["cell_volume"]
 yt.add_field(function = _eth_incell, 
              units = "erg", 
              name = "Thermal_Energy",
@@ -85,11 +95,22 @@ yt.add_field(function = _ek_incell,
 #=========================================================#
 
 def Heat_Cool(field, data):
-    return data["crht"]*yt.YTQuantity(1,"erg/s/cm**3")/data["cooling_rate"]
+    return (data["crht"]+data["csht"])*yt.YTQuantity(1,"erg/s/cm**3")/data["cooling_rate"]
 yt.add_field(   ("gas","Heating/Cooling"), 
-                function=Heat_Cool, 
+                function = Heat_Cool, 
                 units="",
                 sampling_type = "cell")
+
+#=========================================================#
+
+def CR_Heating(field, data):
+    return (data["crht"]+data["csht"])*yt.YTQuantity(1,"erg/s/cm**3")
+yt.add_field(   ("gas","CR_Heating"), 
+                function = CR_Heating, 
+                units="erg/s/cm**3",
+                sampling_type = "cell")
+
+#=========================================================#
 
 def ECR_tot(dataset):
     ds = dataset
@@ -107,7 +128,52 @@ def Eth_tot(dataset):
     ds = dataset
     return ds.all_data().quantities.total_quantity(["Thermal_Energy"])
 
+#=========================================================#
 
+def ECR_InBub(dataset, BubbleDef):
+    ds = dataset
+    F_CR = ds.r["CR_energy_density"]
+    CRIC = ds.r["CR_energy_incell"]
+    CR_InBub = np.sum(CRIC[F_CR >= BubbleDef])
+    return CR_InBub
 
+#=========================================================#
 
+def Ek_InBub(dataset, BubbleDef):
+    ds = dataset
+    F_CR = ds.r["CR_energy_density"]
+    Ek = ds.r["Kinetic_Energy"]
+    Ek_InBub = np.sum(Ek[F_CR >= BubbleDef])
+    return Ek_InBub
+
+#=========================================================#
+
+def Eth_InBub(dataset, BubbleDef):
+    ds = dataset
+    F_CR = ds.r["CR_energy_density"]
+    Eth = ds.r["Thermal_Energy"]
+    Eth_InBub = np.sum(Eth[F_CR >= BubbleDef])
+    return Eth_InBub
+
+#=========================================================#
+
+def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae'):
+    ds = ts[frame]
+    p = yt.SlicePlot(ds, 
+                     'x', 
+                     Field, 
+                     width=(200, 'kpc')
+                     ).set_cmap(field = Field, cmap=CMAP)
+    if mag:
+        p.annotate_magnetic_field(normalize=True)
+
+    if vel:
+        p.annotate_velocity(factor = 16,normalize=True)
+    
+    p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
+    plot = p.plots[Field]        
+    plot.figure = fig
+    plot.axes = grid[i].axes
+    plot.cax = grid.cbar_axes[i]
+    p._setup_plots()
 

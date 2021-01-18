@@ -9,15 +9,17 @@ import My_Plugin as M
 #Set the parameters
 Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
 Folder_e = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Fields = {  'crht': 1,
-            'CR_energy_density': 1,
-            'density': 1,
-            'pressure': 1,
-            'temperature': 1,
-            'csht': 1}
+Fields = {  'crht': 0,
+            'CR_energy_density': 0,
+            'density': 0,
+            'pressure': 0,
+            'temperature': 0,
+            'csht': 1,
+            'mag_strength': 0}
 CMAP = 'algae' #'dusk'
-Frames = [1,10,20,30,40,50]
-#Frames = [3]
+#Frames = [1,10,20,30,40,50]
+Frames = [11]
+Width = 100
 #===========================#
 
 ts_p = yt.load(Folder_p) #Proton Jet dataset
@@ -25,7 +27,7 @@ ts_e = yt.load(Folder_e) #Electron Jet dataset
 
 fns = [ts_p, ts_e] # Total set of datas
 
-def Plot(Frame,ts_p,ts_e):
+def Plot(Frame, ts_p, ts_e, mag=False, vel=False):
     
     fig = plt.figure(figsize=(16,16))
     rc_context({'mathtext.fontset': 'stix'})
@@ -41,36 +43,9 @@ def Plot(Frame,ts_p,ts_e):
                     cbar_pad = "0%")
 
     # Proton Jet        
-    pp = yt.SlicePlot(ts_p[Frame], 
-                     'x', 
-                     Field, 
-                     width=(200, 'kpc')
-                     ).set_cmap(field = Field, cmap=CMAP
-                     )#.annotate_velocity(factor = 16,normalize=True)
-
-    pp.set_zlim(Field, M.Zlim(Field)[0], M.Zlim(Field)[1])
-    plotp = pp.plots[Field]        
-    plotp.figure = fig
-    plotp.axes = grid[0].axes
-    plotp.cax = grid.cbar_axes[0]
-    pp._setup_plots()
-
-    # Electron Jet
-
-    pe = yt.SlicePlot(ts_e[Frame], 
-                     'x', 
-                     Field, 
-                     width=(200, 'kpc')
-                     ).set_cmap(field = Field, cmap=CMAP
-                     )#.annotate_velocity(factor = 16,normalize=True)
-
-    pe.set_zlim(Field, M.Zlim(Field)[0], M.Zlim(Field)[1])
-    plote = pe.plots[Field]        
-    plote.figure = fig
-    plote.axes = grid[1].axes
-    plote.cax = grid.cbar_axes[1]
-    pe._setup_plots()
-
+    M.One_Plot(0, ts_p, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
+    M.One_Plot(1, ts_e, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
+    
     grid[0].axes.set_title("Proton Jet", fontsize=20)
     grid[1].axes.set_title("Electron Jet", fontsize=20)
     fig.suptitle("Time: {:03.0f} Myr".format(float(ts_p[i].current_time/31556926e6)),fontsize=24, y=0.80)
@@ -81,6 +56,10 @@ def Plot(Frame,ts_p,ts_e):
 for key in Fields:
     if Fields[key] ==1:
         Field = key
+        if Field == 'mag_strength':
+            MAG = True
+        else:
+            MAG = False
         for i in Frames:
-            Plot(i,ts_p,ts_e)
+            Plot(i, ts_p, ts_e, mag=MAG)
 
