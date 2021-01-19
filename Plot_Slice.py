@@ -10,15 +10,15 @@ import My_Plugin as M
 Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
 Folder_e = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
 Fields = {  'crht': 0,
-            'CR_energy_density': 0,
+            'CR_energy_density': 1,
             'density': 0,
             'pressure': 0,
             'temperature': 0,
-            'csht': 1,
+            'csht': 0,
             'mag_strength': 0}
 CMAP = 'algae' #'dusk'
-#Frames = [1,10,20,30,40,50]
-Frames = [11]
+Frames = [10,30,50]
+#Frames = [11]
 Width = 100
 #===========================#
 

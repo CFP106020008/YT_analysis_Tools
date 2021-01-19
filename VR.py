@@ -7,11 +7,11 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 import My_Plugin as M
 
 #Set the parameters
-Folder_p = "./AGNCRp/crbub_hdf5_plt_cnt_*"
-Folder_e = "./AGNCRe/crbub_hdf5_plt_cnt_*"
+Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
+Folder_e = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
 #Field = 'Heating/Cooling'
-#Field = 'CR_energy_density'
-Field = 'density'
+Field = 'CR_energy_density'
+#Field = 'density'
 #Field = 'pressure'
 #Field = 'temperature'
 CMAP = 'algae' #'dusk'
@@ -27,11 +27,19 @@ ds = ts_p[-1]
 sc = yt.create_scene(ds, Field)
 
 cam = sc.camera
-cam.pitch(np.pi/4.0)
 cam.width = 100*yt.units.kpc
-cam.focus = ds.domain_center
+cam.yaw(np.pi/2, rot_center=ds.domain_center)
+#cam.focus = ds.domain_center
+#cam.switch_orientation()
 
-sc.save("VR.png")
 
+source = sc[0]
+source.tfh.set_bounds((M.Zlim(Field)[0],M.Zlim(Field)[1]))
+source.tfh.set_log(True)
+source.tfh.grey_opacity = False
 
+#render_source.transfer_function = tfh.tf
 
+source.tfh.plot('./VR/transfer_function.png', profile_field='density')
+
+sc.save('./VR/rendering.png', sigma_clip=4.0)

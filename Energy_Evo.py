@@ -12,7 +12,7 @@ ts_p = yt.load(Folder_p) #Proton Jet dataset
 ts_e = yt.load(Folder_e) #Electron Jet dataset
 Frame = len(ts_p)
 BubbleOnly = True
-BubbleDef = 1e-14
+BubbleDef = 1e-15
 
 # Store data in an np array
 # First axis: Time, Proton, Electron
@@ -27,12 +27,12 @@ if BubbleOnly:
     for i in range(Frame):
         print("Making Plot: {}/{}".format(i+1,len(ts_p)))
         OUT[1,i,0] = M.ECR_InBub(ts_p[i], BubbleDef=BubbleDef)
-        OUT[2,i,0] = M.ECR_InBub(ts_p[i], BubbleDef=BubbleDef)
+        OUT[2,i,0] = M.ECR_InBub(ts_e[i], BubbleDef=BubbleDef)
         OUT[1,i,1] =  M.Ek_InBub(ts_p[i], BubbleDef=BubbleDef)
         OUT[2,i,1] =  M.Ek_InBub(ts_e[i], BubbleDef=BubbleDef)
         OUT[1,i,2] = M.Eth_InBub(ts_p[i], BubbleDef=BubbleDef)
         OUT[2,i,2] = M.Eth_InBub(ts_e[i], BubbleDef=BubbleDef)
-    np.save("E_Evo_Streaming_Bubble.npy",OUT)
+    np.save("E_Evo_Bubble.npy",OUT)
 else:
     for i in range(Frame):
         print("Making Plot: {}/{}".format(i+1,len(ts_p)))
@@ -42,5 +42,5 @@ else:
         OUT[2,i,1] =  M.Ek_tot(ts_e[i])
         OUT[1,i,2] = M.Eth_tot(ts_p[i])
         OUT[2,i,2] = M.Eth_tot(ts_e[i])
-    np.save("E_Evo_Streaming_Total.npy",OUT)
+    np.save("E_Evo_Total.npy",OUT)
 #print(OUT)

@@ -9,6 +9,8 @@ import My_Plugin as M
 #Set the parameters
 Folder_p = "../CRp_Streaming/crbub_hdf5_plt_cnt_*"
 Folder_e = "../CRe_Streaming/crbub_hdf5_plt_cnt_*"
+Folder_ps = "../CRp/crbub_hdf5_plt_cnt_*"
+Folder_es = "../CRe/crbub_hdf5_plt_cnt_*"
 Fields = {  'crht': 1,
             'CR_energy_density': 0,
             'density': 0,
@@ -49,9 +51,9 @@ for key in Fields:
                         cbar_pad = "0%")
 
         # Proton Jet        
-        M.One_Plot(0, ts_p, start_frame, Field, mag=MAG, fig=fig, grid=grid)
+        #M.One_Plot(0, ts_p, start_frame, Field, mag=MAG, fig=fig, grid=grid)
         # Electron Jet
-        M.One_Plot(1, ts_e, start_frame, Field, mag=MAG, fig=fig, grid=grid)
+        #M.One_Plot(1, ts_e, start_frame, Field, mag=MAG, fig=fig, grid=grid)
 
         def animate(i):
             print("Making Video: {}/{}".format(i+1,len(ts_p)))
