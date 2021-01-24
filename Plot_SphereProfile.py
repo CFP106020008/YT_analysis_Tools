@@ -9,32 +9,31 @@ import My_Plugin as M
 from matplotlib.animation import FuncAnimation
 
 #Set the parameters
-Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_p = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
-#Field = ['Heating/Cooling']
-#Field = 'CR_energy_density'
-#Field = 'density'
-#Field = 'pressure'
-#Field = 'temperature'
-#CMAP = 'seismic'#'algae' #'dusk'
+Folder_pS = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
+Folder_eS = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
 Frames = [1,10,20,30,40,50]
 radius = 100
 center = [0,0,0]
 FPS = 10
-ANIME = True
-ALLINONE = False
 #===========================#
 
-ts_p = yt.load(Folder_p) #Proton Jet dataset
-#ts_e = yt.load(Folder_e) #Electron Jet dataset
+CRpS = yt.load(Folder_pS) # Proton Jet dataset
+CReS = yt.load(Folder_eS) # Electron Jet dataset
 start_frame = 1
-end_frame = len(ts_p)
+end_frame = len(CRpS)
 
 n = len(Frames)
 colors = plt.cm.jet(np.linspace(0,1,n))
 
-#fns = [ts_p, ts_e] # Total set of datas
- 
+# Set the plots
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
+ax.set_xlabel("Radius (kpc)")
+ax.set_ylabel(r'$(erg/s/cm^3)$')
+
+def set_lim(ax):
+    ax.set_xlim([0,radius])
+    ax.set_ylim([1e-28,1e-24])
+
 def Profile(Ds, frame, Field):    
     ds = Ds[frame]
     sphere = ds.sphere(center, (radius, "kpc"))
@@ -42,50 +41,50 @@ def Profile(Ds, frame, Field):
                            units = {'radius': 'kpc'},
                            logs = {'radius': False})
     return [P.x.value, P[Field].value]
-
-def animate(i):
-    print("Making Video: {}/{}".format(i+1,len(ts_p)))
-    [hx, hy] = Profile(i, 'CR_Heating')
-    [cx, cy] = Profile(i, 'cooling_rate')
+#================================================#
+def ALLINONE(Ds, Name, fig=fig, ax=ax):
+    set_lim(ax)
+    [x, y] = Profile(Ds, 0, 'cooling_rate')
+    ax.semilogy(x, y, linestyle='dashed',label='Cooling Rate at t = {:03.0f} Myr'.format(M.Time(Ds[0])))
+    for i, frame in enumerate(Frames):
+        [x, y] = Profile(Ds, frame, 'CR_Heating')
+        ax.semilogy(x, y, color=colors[i], label='CR Heating Rate at t = {:03.0f} Myr'.format(M.Time(Ds[frame])))
+    plt.legend()
+    plt.savefig("Heat_Cool_Spherical_Profile_{}.png".format(Name), dpi=300)
+    ax.clear()
+#================================================#
+def animate(i, Ds):
+    print("Making Video: {}/{}".format(i+1,end_frame))
+    [hx, hy] = Profile(Ds, i, 'CR_Heating')
+    [cx, cy] = Profile(Ds, i, 'cooling_rate')
     c.set_data(cx, cy)
     h.set_data(hx, hy)
-    ax.set_title("Time: {:03.0f} Myr".format(float(ts_p[frame].current_time/31556926e6)))
+    ax.set_title("Time: {:03.0f} Myr".format(M.Time(Ds[i])))
 
 animation = FuncAnimation(fig = fig,
                           func = animate,
-                          frames = range(start_frame,end_frame),
+                          frames = range(start_frame, end_frame),
                           interval = int(1000/FPS),
                           save_count = 0
                           )
-# Main Code
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
-ax.set_xlabel("Radius (kpc)")
-ax.set_ylabel(r'$(erg/s/cm^3)$')
-ax.set_xlim([0,radius])
-ax.set_ylim([1e-28,1e-24])
-
-if ANIME:
+def ANIME(fig=fig, ax=ax): # Making animation
     c, = ax.semilogy([], [], label="Cooling Rate", color='b')
     h, = ax.semilogy([], [], label="Heating Rate", color='r')
     animation.save('HeatCoolProfile.mp4', dpi=300)
-
-elif ALLINONE:
-    [x, y] = Profile(0, 'cooling_rate')
-    ax.semilogy(x, y, linestyle='dashed',label='Cooling Rate at t = {:03.0f} Myr'.format(float(ts_p[0].current_time/31556926e6)))
-    for i, frame in enumerate(Frames):
-        [x, y] = Profile(frame, 'CR_Heating')
-        ax.semilogy(x, y, color=colors[i], label='CR Heating Rate at t = {:03.0f} Myr'.format(float(ts_p[frame].current_time/31556926e6)))
-    plt.legend()
-    #plt.colorbar()
-    plt.savefig("Heat_Cool_Spherical_Profile", dpi=300)
-
-else:
+#================================================#
+def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
     c, = ax.semilogy([], [], label="Cooling Rate", color='b')
     h, = ax.semilogy([], [], label="Heating Rate", color='r')
     for frame in Frames:
-        [hx, hy] = Profile(frame, 'CR_Heating')
-        [cx, cy] = Profile(frame, 'cooling_rate')
+        [hx, hy] = Profile(Ds, frame, 'CR_Heating')
+        [cx, cy] = Profile(Ds, frame, 'cooling_rate')
         c.set_data(cx, cy)
         h.set_data(hx, hy)
-        ax.set_title("Time: {:03.0f} Myr".format(float(ts_p[frame].current_time/31556926e6)))
+        ax.set_title("Time: {:03.0f} Myr".format(M.Time(Ds[frame])))
         plt.savefig("HeatCool_Spherical_Profile_frame={}.png".format(frame), dpi=300)
+
+#================================================#
+# Main Code
+#ALLINONE(CRpS, 'CRpS')
+ALLINONE(CReS, 'CReS')
+
