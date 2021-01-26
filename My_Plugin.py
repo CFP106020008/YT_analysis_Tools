@@ -11,7 +11,10 @@ def Zlim(Field):
              'crht':[1e-29, 1e-25],
              'pressure':[1e-11, 1e-8],
              'csht':[1e-29, 1e-25],
-             'mag_strength':[1e-7,1e-5]
+             'mag_strength':[1e-7, 1e-5],
+             'beta_B': [1, 1e3],
+             'beta_CR': [1, 1e3],
+             'beta_th': [1, 1e3]
             }
     return ZLIMS[Field]
 
@@ -51,12 +54,32 @@ yt.add_field(   ("gas", "cooling_time"),
 
 #=========================================================#
 
+# Total Pressure / Magnetic Pressure
+def beta_B(field, data):
+    return data["pres"]/data["magp"]
+yt.add_field(function = beta_B, 
+             units = "", 
+             name = "beta_B", 
+             sampling_type = "cell")
+
+#=========================================================#
+
 # Cosmic Ray energy density
 def ecr(field, data):
     return data["density"]*data["cray"]*yt.YTQuantity(1,"erg/g")
 yt.add_field(function = ecr, 
              units = "erg/cm**3", 
              name = "CR_energy_density", 
+             sampling_type = "cell")
+
+#=========================================================#
+
+# Total Pressure / CR Pressure
+def beta_CR(field, data):
+    return data["pres"]/(data["CR_energy_density"]/3)
+yt.add_field(function = beta_CR, 
+             units = "", 
+             name = "beta_CR", 
              sampling_type = "cell")
 
 #=========================================================#
@@ -77,6 +100,20 @@ def _eth_incell(field, data):
 yt.add_field(function = _eth_incell, 
              units = "erg", 
              name = "Thermal_Energy",
+             sampling_type = "cell")
+
+#=========================================================#
+
+# Total Pressure / Thermal pressure
+def beta_th(field, data):
+    mu = 0.61 # assuming fully ionized gas
+    mp = 1.67e-24*YTQuantity(1.,"g")
+    n = data["density"]/mu/mp
+    T = data["temp"].in_units('K') 
+    return data["pres"]/(n*kb*T)
+yt.add_field(function = beta_th, 
+             units = "", 
+             name = "beta_th",
              sampling_type = "cell")
 
 #=========================================================#
@@ -177,3 +214,7 @@ def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae')
     plot.cax = grid.cbar_axes[i]
     p._setup_plots()
 
+#=========================================================#
+
+def Time(ds):
+    return float(ds.current_time/31556926e6)

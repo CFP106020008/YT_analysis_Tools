@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-Bubble = np.load('./E_Evo_Streaming_Bubble.npy')
-Total = np.load('./E_Evo_Streaming_Total.npy')
+DS1 = np.load('./E_EVO/E_Evo_Streaming_Bubble.npy')
+#DS2 = np.load('./E_EVO/E_Evo_Streaming_Total.npy')
+DS2 = np.load('./E_Evo_Bubble.npy')
 
 Plot_dE = True
 fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8,8), sharey=True, sharex=True)
@@ -22,44 +23,17 @@ def Plot(i, j, k, Datas, Name, Color, Type): #Note that k=1 is for CRp, k=2 is f
     axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,2])[1:], linestyle=':' , color=Color, label=r"$E_{th}$")
     axes[i,j].semilogy(Time[1:], Total_Energy(Datas[k,:,:])[1:], linestyle='-' , color=Color, label=r"$E_{tot}$")
     axes[i,j].set_title("{} Jet ({})".format(Name, Type))
-    #axes[i,j].set_xlabel(r'Time (Myr)')
-    #axes[i,j].set_ylabel('$E-E_{0} (erg)$')
     axes[i,j].set_ylim(y_lim)
     axes[i,j].legend()
 
-Time = Bubble[0,:,0]
+Time = DS1[0,:,0]
 
 if Plot_dE:
-    Plot(0, 0, 1, Bubble, 'CRpS', 'r', 'Bubble')
-    Plot(0, 1, 2, Bubble, 'CReS', 'b', 'Bubble')
-    Plot(1, 0, 1, Total,  'CRpS', 'r', 'Total')
-    Plot(1, 1, 2, Total,  'CReS', 'b', 'Total')
-    #plt.tick_params(labelcolor="none", bottom=False, left=False)
-    #plt.xlabel(r'Time (Myr)')
-    #plt.ylabel('$E-E_{0} (erg)$')
+    Plot(0, 0, 1, DS1, 'CRpS', 'r', 'Bubble')
+    Plot(0, 1, 2, DS1, 'CReS', 'b', 'Bubble')
+    Plot(1, 0, 1, DS2, 'CRp', 'r', 'Bubble')
+    Plot(1, 1, 2, DS2, 'CRe', 'b', 'Bubble')
     fig.text(0.5, 0.08, r'Time (Myr)', ha='center')
     fig.text(0.04, 0.5, '$E-E_{0} (erg)$', va='center', rotation='vertical')
 
-'''
-else:
-    #axes[0].semilogy(OUT[0,1:,0], OUT[1,1:,0], linestyle='--', color='r', label=r"Proton Jet $E_{CR}$")
-    #axes[0].semilogy(OUT[0,1:,1], OUT[1,1:,1], linestyle='-.', color='r', label=r"Proton Jet $E_k$")
-    axes[0].semilogy(OUT[0,1:,2], OUT[1,1:,2], linestyle=':' , color='r', label=r"Proton Jet $E_{th}$")
-    #axes[0].semilogy(OUT[0,1:,2], np.sum(OUT[1,1:,:],axis=1), linestyle='-' , color='r', label=r"Proton Jet $E_{tot}$")
-    axes[0].set_title("Proton Jet")
-    axes[0].set_xlabel(r'Time (Myr)')
-    axes[0].set_ylabel('$E$ ($erg$)')
-    #axes[0].set_ylim(y_lim)
-    axes[0].legend()
-
-    #axes[1].semilogy(OUT[0,1:,0], OUT[2,1:,0], linestyle='--', color='b', label=r"Electron Jet $E_{CR}$")
-    #axes[1].semilogy(OUT[0,1:,1], OUT[2,1:,1], linestyle='-.', color='b', label=r"Electron Jet $E_k$")
-    axes[1].semilogy(OUT[0,1:,2], OUT[2,1:,2], linestyle=':' , color='b', label=r"Electron Jet $E_{th}$")
-    #axes[1].semilogy(OUT[0,1:,2], np.sum(OUT[2,1:,:],axis=1), linestyle='-' , color='b', label=r"Proton Jet $E_{tot}$")
-    axes[1].set_title("Electron Jet")
-    axes[1].set_xlabel(r'Time (Myr)')
-    axes[1].set_ylabel('$E$ ($erg$)')
-    #axes[1].set_ylim(y_lim)
-    axes[1].legend()
-'''
-plt.savefig("E_Evo_Streaming.png", dpi=300, bbox='tight')
+plt.savefig("E_Evo.png", dpi=300, bbox='tight')

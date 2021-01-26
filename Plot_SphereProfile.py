@@ -23,7 +23,7 @@ start_frame = 1
 end_frame = len(CRpS)
 
 n = len(Frames)
-colors = plt.cm.jet(np.linspace(0,1,n))
+colors = plt.cm.gist_rainbow(np.linspace(0,1,n))
 
 # Set the plots
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
@@ -53,14 +53,14 @@ def ALLINONE(Ds, Name, fig=fig, ax=ax):
     plt.savefig("Heat_Cool_Spherical_Profile_{}.png".format(Name), dpi=300)
     ax.clear()
 #================================================#
-def animate(i, Ds):
+def animate(i):
+    Ds = CRpS #Note here we are only using CRp
     print("Making Video: {}/{}".format(i+1,end_frame))
     [hx, hy] = Profile(Ds, i, 'CR_Heating')
     [cx, cy] = Profile(Ds, i, 'cooling_rate')
     c.set_data(cx, cy)
     h.set_data(hx, hy)
     ax.set_title("Time: {:03.0f} Myr".format(M.Time(Ds[i])))
-
 animation = FuncAnimation(fig = fig,
                           func = animate,
                           frames = range(start_frame, end_frame),
@@ -85,6 +85,6 @@ def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
 
 #================================================#
 # Main Code
-#ALLINONE(CRpS, 'CRpS')
-ALLINONE(CReS, 'CReS')
+ALLINONE(CRpS, 'CRpS')
+#ALLINONE(CReS, 'CReS')
 

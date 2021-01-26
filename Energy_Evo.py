@@ -15,7 +15,7 @@ CRpS = yt.load(Folder_pS) #Proton Jet dataset
 CReS = yt.load(Folder_eS) #Electron Jet dataset
 Frame = len(CRp)
 BubbleOnly = True
-BubbleDef = 1e-15
+BubbleDef = 1e-11
 
 def Set_Table():
     # Store data in an np array
