@@ -14,7 +14,8 @@ def Zlim(Field):
              'mag_strength':[1e-7, 1e-5],
              'beta_B': [1, 1e3],
              'beta_CR': [1, 1e3],
-             'beta_th': [1, 1e3]
+             'beta_th': [1, 1e3],
+             'cooling_time': [3.15e16, 3.17e16]
             }
     return ZLIMS[Field]
 
@@ -167,29 +168,53 @@ def Eth_tot(dataset):
 
 #=========================================================#
 
-def ECR_InBub(dataset, BubbleDef):
+def ECR_InBub(dataset, BubbleDef, radius=100):
+    #global bubbledef 
+    #bubbledef = BubbleDef
+    #ds = yt.load(sp.save_as_dataset()) 
+    #CRIC = CR.data["CR_energy_incell"] #This is for CR
+    #F_CR = ds.r["CR_energy_density"]
+    #CR_InBub = np.sum(CRIC[F_CR >= BubbleDef])
+    #CT = ds.data["cooling_time"] # Use cooling time to define bubble
+    #CR_InBub = np.sum(CRIC[CT >= BubbleDef])
     ds = dataset
-    F_CR = ds.r["CR_energy_density"]
-    CRIC = ds.r["CR_energy_incell"]
-    CR_InBub = np.sum(CRIC[F_CR >= BubbleDef])
+    sp = ds.sphere(ds.domain_center, (radius, "kpc"))
+    CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    CR_InBub = CR.quantities.total_quantity("CR_energy_incell")
     return CR_InBub
 
 #=========================================================#
 
-def Ek_InBub(dataset, BubbleDef):
+def Ek_InBub(dataset, BubbleDef, radius=100):
     ds = dataset
-    F_CR = ds.r["CR_energy_density"]
-    Ek = ds.r["Kinetic_Energy"]
-    Ek_InBub = np.sum(Ek[F_CR >= BubbleDef])
+    sp = ds.sphere(ds.domain_center, (radius, "kpc"))
+    CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    Ek_InBub = CR.quantities.total_quantity("Kinetic_Energy")
+    #ds = dataset
+    #sp = ds.sphere(ds.domain_center, (radius, "kpc"))
+    #ds = yt.load(sp.save_as_dataset()) 
+    #F_CR = ds.r["CR_energy_density"]
+    #Ek = ds.r["Kinetic_Energy"]
+    #CT = ds.r["cooling_time"] # Use cooling time to define bubble
+    ##Ek_InBub = np.sum(Ek[F_CR >= BubbleDef])
+    #Ek_InBub = np.sum(Ek[CT >= BubbleDef])
     return Ek_InBub
 
 #=========================================================#
 
-def Eth_InBub(dataset, BubbleDef):
+def Eth_InBub(dataset, BubbleDef, radius=100):
     ds = dataset
-    F_CR = ds.r["CR_energy_density"]
-    Eth = ds.r["Thermal_Energy"]
-    Eth_InBub = np.sum(Eth[F_CR >= BubbleDef])
+    sp = ds.sphere(ds.domain_center, (radius, "kpc"))
+    CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    Eth_InBub = CR.quantities.total_quantity("Thermal_Energy")
+    #ds = dataset
+    #sp = ds.sphere("max", (radius, "kpc"))
+    #ds = yt.load(sp.save_as_dataset()) 
+    #F_CR = ds.r["CR_energy_density"]
+    #Eth = ds.r["Thermal_Energy"]
+    #CT = ds.r["cooling_time"] # Use cooling time to define bubble
+    ##Eth_InBub = np.sum(Eth[F_CR >= BubbleDef])
+    #Eth_InBub = np.sum(Eth[CT >= BubbleDef])
     return Eth_InBub
 
 #=========================================================#
@@ -218,3 +243,15 @@ def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae')
 
 def Time(ds):
     return float(ds.current_time/31556926e6)
+
+#=========================================================#
+
+def ColdGas(dataset, Tcut=5e5):
+    ds = dataset
+    T = ds.r["temp"]
+    MassInCell = ds.r["dens"]*ds.r["cell_volume"]
+    #print(T <= Tcut)
+    ColdGasMass = np.sum(MassInCell[T <= Tcut])
+    return ColdGasMass
+
+#=========================================================#
