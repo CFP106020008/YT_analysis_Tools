@@ -168,7 +168,7 @@ def Eth_tot(dataset):
 
 #=========================================================#
 
-def ECR_InBub(dataset, BubbleDef, radius=100):
+def ECR_InBub(dataset, BubbleDef, radius=50):
     #global bubbledef 
     #bubbledef = BubbleDef
     #ds = yt.load(sp.save_as_dataset()) 
@@ -185,7 +185,7 @@ def ECR_InBub(dataset, BubbleDef, radius=100):
 
 #=========================================================#
 
-def Ek_InBub(dataset, BubbleDef, radius=100):
+def Ek_InBub(dataset, BubbleDef, radius=50):
     ds = dataset
     sp = ds.sphere(ds.domain_center, (radius, "kpc"))
     CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
@@ -202,11 +202,12 @@ def Ek_InBub(dataset, BubbleDef, radius=100):
 
 #=========================================================#
 
-def Eth_InBub(dataset, BubbleDef, radius=100):
+def Eth_InBub(dataset, BubbleDef, radius=50):
     ds = dataset
     sp = ds.sphere(ds.domain_center, (radius, "kpc"))
     CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
     Eth_InBub = CR.quantities.total_quantity("Thermal_Energy")
+    #print(Eth_InBub)
     #ds = dataset
     #sp = ds.sphere("max", (radius, "kpc"))
     #ds = yt.load(sp.save_as_dataset()) 

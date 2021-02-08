@@ -11,25 +11,26 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 #Set the parameters
 Folder_ps = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
 Folder_es = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_p  = "/data/yhlin/CRp/crbub_hdf5_plt_cnt_*"
-Folder_e  = "/data/yhlin/CRe/crbub_hdf5_plt_cnt_*"
-Fields = {  'crht': 0,
+Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
+Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
+Fields = {  'crht':              0,
             'CR_energy_density': 0,
-            'density': 0,
-            'pressure': 0,
-            'temperature': 0,
-            'csht': 0,
-            'mag_strength': 0,
-            'beta_B': 0,
-            'beta_CR': 0,
-            'beta_th': 1
+            'density':           0,
+            'pressure':          0,
+            'temperature':       0,
+            'csht':              0,
+            'mag_strength':      0,
+            'beta_B':            0,
+            'beta_CR':           0,
+            'beta_th':           0,
+            'cooling_time':      1
             }
 CMAP = 'algae' #'dusk'
 FPS = 10
 #===========================#
 
-ts_p = yt.load(Folder_ps) #Proton Jet dataset
-ts_e = yt.load(Folder_es) #Electron Jet dataset
+ts_p = yt.load(Folder_p) #Proton Jet dataset
+ts_e = yt.load(Folder_e) #Electron Jet dataset
 
 start_frame = 1
 end_frame = min(len(ts_p),len(ts_e))

@@ -11,7 +11,10 @@ from matplotlib.animation import FuncAnimation
 #Set the parameters
 Folder_pS = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
 Folder_eS = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Frames = [1,10,20,30,40,50]
+Folder_p = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
+Folder_e = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
+#Frames = [1,3,5,7,9,11,13,15] #This is for eariler epoc
+Frames = [1,10,20,30,40,50] #This is for the whole simulation time
 radius = 100
 center = [0,0,0]
 FPS = 10
@@ -19,11 +22,13 @@ FPS = 10
 
 CRpS = yt.load(Folder_pS) # Proton Jet dataset
 CReS = yt.load(Folder_eS) # Electron Jet dataset
+CRp = yt.load(Folder_p) # Proton Jet dataset
+CRe = yt.load(Folder_e) # Electron Jet dataset
 start_frame = 1
 end_frame = len(CRpS)
 
 n = len(Frames)
-colors = plt.cm.gist_rainbow(np.linspace(0,1,n))
+colors = plt.cm.PuBu(np.linspace(0.3,1,n))
 
 # Set the plots
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
@@ -53,23 +58,22 @@ def ALLINONE(Ds, Name, fig=fig, ax=ax):
     plt.savefig("Heat_Cool_Spherical_Profile_{}.png".format(Name), dpi=300)
     ax.clear()
 #================================================#
-def animate(i):
-    Ds = CRpS #Note here we are only using CRp
-    print("Making Video: {}/{}".format(i+1,end_frame))
-    [hx, hy] = Profile(Ds, i, 'CR_Heating')
-    [cx, cy] = Profile(Ds, i, 'cooling_rate')
-    c.set_data(cx, cy)
-    h.set_data(hx, hy)
-    ax.set_title("Time: {:03.0f} Myr".format(M.Time(Ds[i])))
-animation = FuncAnimation(fig = fig,
-                          func = animate,
-                          frames = range(start_frame, end_frame),
-                          interval = int(1000/FPS),
-                          save_count = 0
-                          )
-def ANIME(fig=fig, ax=ax): # Making animation
+def ANIME(Ds, fig=fig, ax=ax): # Making animation
     c, = ax.semilogy([], [], label="Cooling Rate", color='b')
     h, = ax.semilogy([], [], label="Heating Rate", color='r')
+    def animate(i):
+        print("Making Video: {}/{}".format(i+1,end_frame))
+        [hx, hy] = Profile(Ds, i, 'CR_Heating')
+        [cx, cy] = Profile(Ds, i, 'cooling_rate')
+        c.set_data(cx, cy)
+        h.set_data(hx, hy)
+        ax.set_title("Time: {:03.0f} Myr".format(M.Time(Ds[i])))
+    animation = FuncAnimation(fig = fig,
+                              func = animate,
+                              frames = range(start_frame, end_frame),
+                              interval = int(1000/FPS),
+                              save_count = 0
+                              )
     animation.save('HeatCoolProfile.mp4', dpi=300)
 #================================================#
 def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
@@ -86,5 +90,7 @@ def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
 #================================================#
 # Main Code
 ALLINONE(CRpS, 'CRpS')
-#ALLINONE(CReS, 'CReS')
+ALLINONE(CReS, 'CReS')
+ALLINONE(CRp, 'CRp')
+ALLINONE(CRe, 'CRe')
 
