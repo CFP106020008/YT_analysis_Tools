@@ -9,16 +9,8 @@ from matplotlib import rc_context
 import My_Plugin as M
 
 #Set the parameters
-Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
-Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
-Folder_pS = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_eS = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-CRp  = yt.load(Folder_p) #Proton Jet dataset
-CRe  = yt.load(Folder_e) #Electron Jet dataset
-CRpS = yt.load(Folder_pS) #Proton Jet dataset
-CReS = yt.load(Folder_eS) #Electron Jet dataset
+CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 Frame = len(CRp)
-#BubbleOnly = False#True
 BubbleDef = 9.47e16
 MultiProcess = True
 MultiThread = False
@@ -107,9 +99,11 @@ def Write_Data(Ds1, Ds2, Name, n_thread, BubbleOnly=True):
         np.save("E_Evo_Total_{}.npy".format(Name),OUT)
 
 # Main Code
-Write_Data(CRp, CRe, Name='No_Streaming', n_thread=10)
-Write_Data(CRpS, CReS, Name='Streaming', n_thread=10)
+#Write_Data(CRp, CRe, Name='No_Streaming', n_thread=10)
+#Write_Data(CRpS, CReS, Name='Streaming', n_thread=10)
 #Write_Data(CRp, CRe, Name="No_Streaming", n_thread=10, BubbleOnly=False)
 #Write_Data(CRpS, CReS, Name="Streaming",  n_thread=10, BubbleOnly=False)
+Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10)
+Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10, BubbleOnly=False)
 End_Time = time.time()
 print('The code takes {} s to finish'.format(End_Time-Start_Time))

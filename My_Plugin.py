@@ -19,8 +19,37 @@ def Zlim(Field):
             }
     return ZLIMS[Field]
 
+def Zlim_Projection(Field):
+    ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
+             'CR_energy_density':[1e9, 1e17],
+             'density':[1e-2, 1e-1],
+             'temperature':[1e7, 1e9],
+             'crht':[1e-29, 1e-25],
+             'pressure':[1e-11, 1e-8],
+             'csht':[1e-29, 1e-25],
+             'mag_strength':[1e-7, 1e-5],
+             'beta_B': [1, 1e3],
+             'beta_CR': [1, 1e3],
+             'beta_th': [1, 1e3],
+             'cooling_time': [3.15e16, 3.17e16]
+            }
+    return ZLIMS[Field]
+
 #=========================================================#
 
+# Loading all the file folders
+def Load_Simulation_Datas():
+    Folder_ps = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
+    Folder_es = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
+    Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
+    Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
+    CRp = yt.load(Folder_p) #Proton Jet dataset
+    CRe = yt.load(Folder_e) #Electron Jet dataset
+    CRpS = yt.load(Folder_ps) #Proton Jet dataset
+    CReS = yt.load(Folder_es) #Electron Jet dataset
+    return [CRp, CRe, CRpS, CReS]
+
+#=========================================================#
 def _mag_strength(field, data):
     return np.sqrt(data["magx"]**2 + data["magy"]**2 + data["magz"]**2)
 yt.add_field(   ("gas","mag_strength"), 
@@ -169,14 +198,6 @@ def Eth_tot(dataset):
 #=========================================================#
 
 def ECR_InBub(dataset, BubbleDef, radius=50):
-    #global bubbledef 
-    #bubbledef = BubbleDef
-    #ds = yt.load(sp.save_as_dataset()) 
-    #CRIC = CR.data["CR_energy_incell"] #This is for CR
-    #F_CR = ds.r["CR_energy_density"]
-    #CR_InBub = np.sum(CRIC[F_CR >= BubbleDef])
-    #CT = ds.data["cooling_time"] # Use cooling time to define bubble
-    #CR_InBub = np.sum(CRIC[CT >= BubbleDef])
     ds = dataset
     sp = ds.sphere(ds.domain_center, (radius, "kpc"))
     CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
@@ -190,14 +211,6 @@ def Ek_InBub(dataset, BubbleDef, radius=50):
     sp = ds.sphere(ds.domain_center, (radius, "kpc"))
     CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
     Ek_InBub = CR.quantities.total_quantity("Kinetic_Energy")
-    #ds = dataset
-    #sp = ds.sphere(ds.domain_center, (radius, "kpc"))
-    #ds = yt.load(sp.save_as_dataset()) 
-    #F_CR = ds.r["CR_energy_density"]
-    #Ek = ds.r["Kinetic_Energy"]
-    #CT = ds.r["cooling_time"] # Use cooling time to define bubble
-    ##Ek_InBub = np.sum(Ek[F_CR >= BubbleDef])
-    #Ek_InBub = np.sum(Ek[CT >= BubbleDef])
     return Ek_InBub
 
 #=========================================================#
@@ -207,15 +220,6 @@ def Eth_InBub(dataset, BubbleDef, radius=50):
     sp = ds.sphere(ds.domain_center, (radius, "kpc"))
     CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
     Eth_InBub = CR.quantities.total_quantity("Thermal_Energy")
-    #print(Eth_InBub)
-    #ds = dataset
-    #sp = ds.sphere("max", (radius, "kpc"))
-    #ds = yt.load(sp.save_as_dataset()) 
-    #F_CR = ds.r["CR_energy_density"]
-    #Eth = ds.r["Thermal_Energy"]
-    #CT = ds.r["cooling_time"] # Use cooling time to define bubble
-    ##Eth_InBub = np.sum(Eth[F_CR >= BubbleDef])
-    #Eth_InBub = np.sum(Eth[CT >= BubbleDef])
     return Eth_InBub
 
 #=========================================================#
@@ -227,6 +231,11 @@ def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae')
                      Field, 
                      width=(200, 'kpc')
                      ).set_cmap(field = Field, cmap=CMAP)
+    #p = yt.ProjectionPlot(ds, 
+    #                      'x', 
+    #                      Field, 
+    #                      width=(200, 'kpc')
+    #                      ).set_cmap(field = Field, cmap=CMAP)
     if mag:
         p.annotate_magnetic_field(normalize=True)
 
@@ -234,6 +243,7 @@ def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae')
         p.annotate_velocity(factor = 16,normalize=True)
     
     p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
+    #p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
     plot = p.plots[Field]        
     plot.figure = fig
     plot.axes = grid[i].axes

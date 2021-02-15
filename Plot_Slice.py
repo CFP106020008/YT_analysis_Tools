@@ -7,27 +7,38 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 import My_Plugin as M
 
 #Set the parameters
-Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_e = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Fields = {  'crht': 0,
-            'CR_energy_density': 1,
-            'density': 0,
-            'pressure': 0,
-            'temperature': 0,
-            'csht': 0,
-            'mag_strength': 0}
+Folder_ps = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
+Folder_es = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
+Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
+Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
+Folder_esrc = "/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*"
+
+Fields = {  'crht':              0,
+            'CR_energy_density': 0,
+            'density':           0,
+            'pressure':          0,
+            'temperature':       0,
+            'csht':              1,
+            'mag_strength':      0,
+            'beta_B':            0,
+            'beta_CR':           0,
+            'beta_th':           0,
+            'cooling_time':      0
+            }
+
 CMAP = 'algae' #'dusk'
-Frames = [10,30,50]
-#Frames = [11]
+#Frames = [10,30,50]
+Frames = [22]
 Width = 100
 #===========================#
 
-ts_p = yt.load(Folder_p) #Proton Jet dataset
-ts_e = yt.load(Folder_e) #Electron Jet dataset
+CRp = yt.load(Folder_p) #Proton Jet dataset
+CRe = yt.load(Folder_e) #Electron Jet dataset
+CRpS = yt.load(Folder_ps) #Proton Jet dataset
+CReS = yt.load(Folder_es) #Electron Jet dataset
+CReS_RC = yt.load(Folder_esrc)
 
-fns = [ts_p, ts_e] # Total set of datas
-
-def Plot(Frame, ts_p, ts_e, mag=False, vel=False):
+def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
     
     fig = plt.figure(figsize=(16,16))
     rc_context({'mathtext.fontset': 'stix'})
@@ -43,15 +54,17 @@ def Plot(Frame, ts_p, ts_e, mag=False, vel=False):
                     cbar_pad = "0%")
 
     # Proton Jet        
-    M.One_Plot(0, ts_p, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
-    M.One_Plot(1, ts_e, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
+    M.One_Plot(0, Ds1, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
+    M.One_Plot(1, Ds2, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
     
-    grid[0].axes.set_title("Proton Jet", fontsize=20)
-    grid[1].axes.set_title("Electron Jet", fontsize=20)
-    fig.suptitle("Time: {:03.0f} Myr".format(float(ts_p[i].current_time/31556926e6)),fontsize=24, y=0.80)
+    grid[0].axes.set_title(Titles[0], fontsize=20)
+    grid[1].axes.set_title(Titles[1], fontsize=20)
+    fig.suptitle("Time: {:03.0f} Myr".format(M.Time(Ds1[Frame])),fontsize=24, y=0.80)
 
     plt.savefig("{}_Frame={}.png".format(Field,Frame), dpi=300, bbox='tight')
     plt.close()
+
+Titles = ["CReS", "CReS_RC"]
 
 for key in Fields:
     if Fields[key] ==1:
@@ -61,5 +74,5 @@ for key in Fields:
         else:
             MAG = False
         for i in Frames:
-            Plot(i, ts_p, ts_e, mag=MAG)
+            Plot(i, CReS, CReS_RC, Titles, mag=MAG)
 

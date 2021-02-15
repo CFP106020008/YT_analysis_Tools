@@ -13,30 +13,24 @@ import time
 import os
 
 #Set the parameters
-Folder_ps = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_es = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
-Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
-Fields = {  'crht':              1,
+Fields = {  'crht':              0,
             'CR_energy_density': 1,
-            'density':           1,
-            'pressure':          1,
-            'temperature':       1,
-            'csht':              1,
-            'mag_strength':      1,
-            'beta_B':            1,
-            'beta_CR':           1,
-            'beta_th':           1,
+            'density':           0,
+            'pressure':          0,
+            'temperature':       0,
+            'csht':              0,
+            'mag_strength':      0,
+            'beta_B':            0,
+            'beta_CR':           0,
+            'beta_th':           0,
             'cooling_time':      0
             }
 CMAP = 'algae' #'dusk'
 FPS = 10
+Destination = '4Movies_Projection'
 #===========================#
 
-CRp = yt.load(Folder_p) #Proton Jet dataset
-CRe = yt.load(Folder_e) #Electron Jet dataset
-CRpS = yt.load(Folder_ps) #Proton Jet dataset
-CReS = yt.load(Folder_es) #Electron Jet dataset
+CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 
 Start_Time = time.time()
 start_frame = 0
@@ -69,7 +63,7 @@ def Frame_In_Range(Start, End, Ds1, Ds2, Ds3, Ds4, Field, MAG):
         grid[3].axes.set_title("Electron / With Streaming", fontsize=20)
         #fig.text(0.5, 0.95, "$Time: {:03.0f} Myr$".format(M.Time(Ds1[i])), ha='center', va='top', fontsize=20)
         fig.text(0.5, 0.95, "$\mathrm{Time: }%3d \mathrm{ Myr}$" % M.Time(Ds1[i]), ha='center', va='top', fontsize=20)
-        fig.savefig('/data/yhlin/4Movies/{}/{}_Frame={:03d}.png'.format(Field, Field, i))
+        fig.savefig('./{}/{}_Frame={:03d}.png'.format(Field, Field, i))
         plt.close()
 
 Lost = end_frame%n_thread

@@ -9,10 +9,6 @@ from matplotlib.animation import FuncAnimation
 from mpl_toolkits.axes_grid1 import AxesGrid
 
 #Set the parameters
-Folder_ps = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_es = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
-Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
 Fields = {  'crht':              0,
             'CR_energy_density': 0,
             'density':           0,
@@ -25,17 +21,12 @@ Fields = {  'crht':              0,
             'beta_th':           0,
             'cooling_time':      1
             }
+CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 CMAP = 'algae' #'dusk'
 FPS = 10
 #===========================#
-
-ts_p = yt.load(Folder_p) #Proton Jet dataset
-ts_e = yt.load(Folder_e) #Electron Jet dataset
-
 start_frame = 1
 end_frame = min(len(ts_p),len(ts_e))
-
-fns = [ts_p, ts_e] # Total set of datas
 
 rc_context({'mathtext.fontset': 'stix'})
 
