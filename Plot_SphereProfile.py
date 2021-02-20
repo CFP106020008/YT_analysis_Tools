@@ -9,21 +9,13 @@ import My_Plugin as M
 from matplotlib.animation import FuncAnimation
 
 #Set the parameters
-Folder_pS = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_eS = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_p = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
-Folder_e = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
 #Frames = [1,3,5,7,9,11,13,15] #This is for eariler epoc
 Frames = [1,10,20,30,40,50] #This is for the whole simulation time
 radius = 100
 center = [0,0,0]
 FPS = 10
 #===========================#
-
-CRpS = yt.load(Folder_pS) # Proton Jet dataset
-CReS = yt.load(Folder_eS) # Electron Jet dataset
-CRp = yt.load(Folder_p) # Proton Jet dataset
-CRe = yt.load(Folder_e) # Electron Jet dataset
+CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 start_frame = 1
 end_frame = len(CRpS)
 
@@ -35,11 +27,11 @@ fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
 ax.set_xlabel("Radius (kpc)")
 ax.set_ylabel(r'$(erg/s/cm^3)$')
 
-def set_lim(ax):
+def set_lim(ax): # Set the limit of the plots
     ax.set_xlim([0,radius])
     ax.set_ylim([1e-28,1e-24])
 
-def Profile(Ds, frame, Field):    
+def Profile(Ds, frame, Field): # Calculating the profiles
     ds = Ds[frame]
     sphere = ds.sphere(center, (radius, "kpc"))
     P = yt.create_profile( sphere, 'radius', ['cooling_rate','crht','csht','CR_Heating'],
@@ -47,7 +39,7 @@ def Profile(Ds, frame, Field):
                            logs = {'radius': False})
     return [P.x.value, P[Field].value]
 #================================================#
-def ALLINONE(Ds, Name, fig=fig, ax=ax):
+def ALLINONE(Ds, Name, fig=fig, ax=ax): # Overplot all the profiles in one plot
     set_lim(ax)
     [x, y] = Profile(Ds, 0, 'cooling_rate')
     ax.semilogy(x, y, linestyle='dashed',label='Cooling Rate at t = {:03.0f} Myr'.format(M.Time(Ds[0])))

@@ -38,15 +38,3 @@ fig.text(0.5, 0.08, r'Time (Myr)', ha='center')
 fig.text(0.04, 0.5, r'Cold Gas Mass ($M_{\odot}$)', va='center', rotation='vertical')
 plt.savefig('ColdGasMass_5e5.png', dpi=300)
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-

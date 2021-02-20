@@ -5,15 +5,9 @@ from matplotlib import rc_context
 import My_Plugin as M
 
 #Set the parameters
-Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
-Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
-Folder_pS = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_eS = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-CRp  = yt.load(Folder_p) #Proton Jet dataset
-CRe  = yt.load(Folder_e) #Electron Jet dataset
-CRpS = yt.load(Folder_pS) #Proton Jet dataset
-CReS = yt.load(Folder_eS) #Electron Jet dataset
+CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 Frame = len(CRp)
+TCUT = 5e5 # The temperature to define "cold" gas
 
 def Set_Table():
     # Store data in an np array
@@ -27,8 +21,8 @@ def Set_Table():
 def Write_Data(Ds1, Ds2, Name):
     OUT = Set_Table()
     for i in range(Frame):
-        OUT[i,1] = M.ColdGas(Ds1[i], Tcut=5e5)
-        OUT[i,2] = M.ColdGas(Ds2[i], Tcut=5e5)
+        OUT[i,1] = M.ColdGas(Ds1[i], Tcut=TCUT)
+        OUT[i,2] = M.ColdGas(Ds2[i], Tcut=TCUT)
     np.save("ColdGasMass_{}.npy".format(Name), OUT)
 
 #Write_Data(CRpS, CReS, "Streaming")

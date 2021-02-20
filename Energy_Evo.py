@@ -12,17 +12,19 @@ import My_Plugin as M
 CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 Frame = len(CRp)
 BubbleDef = 9.47e16
-MultiProcess = True
+MultiProcess = True # Use multiprocress on CICA, procress <--> core on CICA
 MultiThread = False
 
 Start_Time = time.time()
 
+# Setting some stuff to make multiple process use the same table
 class MyManager(mpman.BaseManager):
     pass
 MyManager.register('np_ones', np.ones, mpman.ArrayProxy)
 m = MyManager()
 m.start()
 
+# Create the table to store the data
 def Set_Table():
     # Store data in an np array
     # First axis: Time, Proton, Electron
