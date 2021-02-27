@@ -9,11 +9,13 @@ from matplotlib import rc_context
 import My_Plugin as M
 
 #Set the parameters
-CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
-Frame = len(CRp)
+Datas = M.Load_Simulation_Datas()
+Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+DataSet = [Datas[i] for i in Datas_to_use]
+
+Frame = 51
 BubbleDef = 9.47e16
 MultiProcess = True # Use multiprocress on CICA, procress <--> core on CICA
-MultiThread = False
 
 Start_Time = time.time()
 
@@ -30,82 +32,39 @@ def Set_Table():
     # First axis: Time, Proton, Electron
     # Second axis: Time series
     # Third axis: CR, Kinetic, Thermal field
-    OUT = m.np_ones((3,len(CRp),3)) 
+    OUT = m.np_ones((3,len(DataSet[0]),3)) 
     for i in range(3):
-        OUT[0,:,i] = np.linspace(M.Time(CRp[0]), M.Time(CRp[-1]), len(CRp))
+        OUT[0,:,i] = np.linspace(M.Time(DataSet[0][0]), M.Time(DataSet[0][-1]), len(DataSet[0]))
     return OUT
 
 OUT = Set_Table()
 
-def Frames_in_range(Frame1, Frame2, Ds1, Ds2, BubbleDef, OUT):
+def Frames_in_range(Frame1, Frame2, Ds, BubbleDef, OUT):
     for i in range(Frame1, Frame2):
-        print("Making Plot: {}/{}".format(i+1,len(CRp)))
-        OUT[1,i,0] = M.ECR_InBub(Ds1[i], BubbleDef=BubbleDef)
-        OUT[2,i,0] = M.ECR_InBub(Ds2[i], BubbleDef=BubbleDef)
-        OUT[1,i,1] =  M.Ek_InBub(Ds1[i], BubbleDef=BubbleDef)
-        OUT[2,i,1] =  M.Ek_InBub(Ds2[i], BubbleDef=BubbleDef)
-        OUT[1,i,2] = M.Eth_InBub(Ds1[i], BubbleDef=BubbleDef)
-        OUT[2,i,2] = M.Eth_InBub(Ds2[i], BubbleDef=BubbleDef)
+        print("Making Plot: {}/{}".format(i+1,len(DataSet[0])))
+        OUT[1,i,0] = M.ECR_InBub(Ds[i], BubbleDef=BubbleDef)
+        OUT[2,i,0] = M.ECR_tot(Ds[i])
+        OUT[1,i,1] = M.Ek_InBub(Ds[i], BubbleDef=BubbleDef)
+        OUT[2,i,1] = M.Ek_tot(Ds[i])
+        OUT[1,i,2] = M.Eth_InBub(Ds[i], BubbleDef=BubbleDef)
+        OUT[2,i,2] = M.Eth_tot(Ds[i])
 
-def Frames_in_range_Total(Frame1, Frame2, Ds1, Ds2, OUT):
-    for i in range(Frame1, Frame2):
-        print("Making Plot: {}/{}".format(i+1,len(CRp)))
-        OUT[1,i,0] = M.ECR_tot(Ds1[i])
-        OUT[2,i,0] = M.ECR_tot(Ds2[i])
-        OUT[1,i,1] =  M.Ek_tot(Ds1[i])
-        OUT[2,i,1] =  M.Ek_tot(Ds2[i])
-        OUT[1,i,2] = M.Eth_tot(Ds1[i])
-        OUT[2,i,2] = M.Eth_tot(Ds2[i])
-
-def Write_Data(Ds1, Ds2, Name, n_thread, BubbleOnly=True):
-    Lost = Frame%n_thread
-    if BubbleOnly:
-        if MultiProcess:
-            Pro_List = []
-            for i in range(n_thread):
-                Pro_List.append(mp.Process(target=Frames_in_range, args=(int(Frame/n_thread)*i, int(Frame/n_thread)*(i+1), Ds1, Ds2, BubbleDef, OUT)))
-            Pro_List.append(mp.Process(target=Frames_in_range, args=(int(Frame/n_thread)*(i+1), int(Frame/n_thread)*(i+1) + Lost, Ds1, Ds2, BubbleDef, OUT)))
-            for p in Pro_List:
-                p.start()
-            for p in Pro_List:
-                p.join() 
-        if MultiThread:
-            Thread_List = []
-            for i in range(n_thread):
-                Thread_List.append(threading.Thread(target=Frames_in_range, args=(int(Frame/n_thread)*i, int(Frame/n_thread)*(i+1), Ds1, Ds2, BubbleDef, OUT)))
-            Thread_List.append(threading.Thread(target=Frames_in_range, args=(int(Frame/n_thread)*(i+1), int(Frame/n_thread)*(i+1) + Lost, Ds1, Ds2, BubbleDef, OUT)))
-            for t in Thread_List:
-                t.start()
-            for t in Thread_List:
-                t.join() 
-        np.save("E_Evo_Bubble_{}.npy".format(Name),OUT)
-    else:
-        if MultiProcess:
-            Pro_List = []
-            for i in range(n_thread):
-                Pro_List.append(mp.Process(target=Frames_in_range_Total, args=(int(Frame/n_thread)*i, int(Frame/n_thread)*(i+1), Ds1, Ds2, OUT)))
-            Pro_List.append(mp.Process(target=Frames_in_range_Total, args=(int(Frame/n_thread)*(i+1), int(Frame/n_thread)*(i+1) + Lost, Ds1, Ds2, OUT)))
-            for p in Pro_List:
-                p.start()
-            for p in Pro_List:
-                p.join() 
-        if MultiThread:
-            Thread_List = []
-            for i in range(n_thread):
-                Thread_List.append(threading.Thread(target=Frames_in_range_Total, args=(int(Frame/n_thread)*i, int(Frame/n_thread)*(i+1), Ds1, Ds2, OUT)))
-            Thread_List.append(threading.Thread(target=Frames_in_range_Total, args=(int(Frame/n_thread)*(i+1), int(Frame/n_thread)*(i+1) + Lost, Ds1, Ds2, OUT)))
-            for t in Thread_List:
-                t.start()
-            for t in Thread_List:
-                t.join() 
-        np.save("E_Evo_Total_{}.npy".format(Name),OUT)
+def Write_Data(Ds, Name, n_process, BubbleOnly=True):
+    Lost = Frame%n_process
+    Pro_List = []
+    for i in range(n_process):
+        Pro_List.append(mp.Process(target=Frames_in_range, args=(int(Frame/n_process)*i, int(Frame/n_process)*(i+1), Ds, BubbleDef, OUT)))
+    Pro_List.append(mp.Process(target=Frames_in_range, args=(int(Frame/n_process)*(i+1), int(Frame/n_process)*(i+1) + Lost, Ds, BubbleDef, OUT)))
+    for p in Pro_List:
+        p.start()
+    for p in Pro_List:
+        p.join()
+    np.save("./EEVO_{}.npy".format(Name),OUT)
 
 # Main Code
-#Write_Data(CRp, CRe, Name='No_Streaming', n_thread=10)
-#Write_Data(CRpS, CReS, Name='Streaming', n_thread=10)
-#Write_Data(CRp, CRe, Name="No_Streaming", n_thread=10, BubbleOnly=False)
-#Write_Data(CRpS, CReS, Name="Streaming",  n_thread=10, BubbleOnly=False)
-Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10)
-#Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10, BubbleOnly=False)
+Write_Data(DataSet[0], Name=Datas_to_use[0],  n_process=10)
+Write_Data(DataSet[1], Name=Datas_to_use[1],  n_process=10)
+Write_Data(DataSet[2], Name=Datas_to_use[2],  n_process=10)
+Write_Data(DataSet[3], Name=Datas_to_use[3],  n_process=10)
 End_Time = time.time()
 print('The code takes {} s to finish'.format(End_Time-Start_Time))
