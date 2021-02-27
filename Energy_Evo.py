@@ -106,6 +106,6 @@ def Write_Data(Ds1, Ds2, Name, n_thread, BubbleOnly=True):
 #Write_Data(CRp, CRe, Name="No_Streaming", n_thread=10, BubbleOnly=False)
 #Write_Data(CRpS, CReS, Name="Streaming",  n_thread=10, BubbleOnly=False)
 Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10)
-Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10, BubbleOnly=False)
+#Write_Data(CReS, CReS_RC, Name="SelfConsistentCooling",  n_thread=10, BubbleOnly=False)
 End_Time = time.time()
 print('The code takes {} s to finish'.format(End_Time-Start_Time))

@@ -21,13 +21,15 @@ Fields = {  'crht':              0,
             }
 
 CMAP = 'algae' #'dusk'
-Frames = [10,20,30,40,50]
-#Frames = [22]
+#Frames = [10,20,30,40,50]
+Frames = [19]
 Width = 100
 #===========================#
 
 Folder_esrc = "/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*"
+Folder_SpecEvo = "/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*"
 CReS_RC = yt.load(Folder_esrc)
+CReS_SpecEvo = yt.load(Folder_SpecEvo)
 CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 
 def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
@@ -56,7 +58,7 @@ def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
     plt.savefig("{}_Frame={}.png".format(Field,Frame), dpi=300, bbox='tight')
     plt.close()
 
-Titles = ["CReS", "CReS_RC"] # The title of each figure in the plot
+Titles = ["CReS_RC", "CReS_SpecEvo"] # The title of each figure in the plot
 
 for key in Fields:
     if Fields[key] ==1:
@@ -66,4 +68,4 @@ for key in Fields:
         else:
             MAG = False
         for i in Frames:
-            Plot(i, CReS, CReS_RC, Titles, mag=MAG)
+            Plot(i, CReS_RC, CReS_SpecEvo, Titles, mag=MAG)

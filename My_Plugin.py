@@ -47,7 +47,18 @@ def Load_Simulation_Datas():
     CRe = yt.load(Folder_e) #Electron Jet dataset
     CRpS = yt.load(Folder_ps) #Proton Jet dataset
     CReS = yt.load(Folder_es) #Electron Jet dataset
-    return [CRp, CRe, CRpS, CReS]
+    CReS_RC = yt.load("/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*")
+    CReS_SE = yt.load("/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*")
+    CReS_SE_Small = yt.load("/data/yhlin/CReS_Emin=1e-2/crbub_hdf5_plt_cnt_*")
+    Datas = {'CRp': CRp,
+             'CRe': CRe,
+             'CRpS': CRpS,
+             'CReS': CReS,
+             'CReS_RC': CReS_RC,
+             'CReS_SE': CReS_SE,
+             'CReS_SE_Small': CReS_SE_Small
+            }
+    return Datas
 
 #=========================================================#
 def _mag_strength(field, data):
