@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-DS1 = np.load("/data/yhlin/EEVO_Cooling/EEVO_CReS.npy")
-DS2 = np.load("/data/yhlin/EEVO_Cooling/EEVO_CReS_RC.npy")
-DS3 = np.load("/data/yhlin/EEVO_Cooling/EEVO_CReS_SE.npy")
-DS4 = np.load("/data/yhlin/EEVO_Cooling/EEVO_CReS_SE_Small.npy")
+DS1 = np.load("/data/yhlin/E_EVO/EEVO_CReS.npy")
+DS2 = np.load("/data/yhlin/E_EVO/EEVO_CReS_RC.npy")
+DS3 = np.load("/data/yhlin/E_EVO/EEVO_CReS_SE.npy")
+DS4 = np.load("/data/yhlin/E_EVO/EEVO_CReS_SE_Small.npy")
 
 #Plot_dE = True
 PlotDE = True #False
@@ -24,7 +24,7 @@ def Total_Energy(Data):
 def Plot_dE(i, j, k, Datas, Name, Color, Type): #Note that k=1 is for bubble, k=2 is for total field    
     axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,0])[1:], linestyle='--', color=Color, label=r"$E_{CR}$")
     axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,1])[1:], linestyle='-.', color=Color, label=r"$E_k$"   )
-    axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,2])[1:], linestyle=':' , color=Color, label=r"$E_{th}$")
+    axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,2])[1:b], linestyle=':' , color=Color, label=r"$E_{th}$")
     axes[i,j].semilogy(Time[1:], Delta_Energy(Total_Energy(Datas[k,:,:]))[1:], linestyle='-' , color=Color, label=r"$E_{tot}$")
     axes[i,j].set_title("{} Jet ({})".format(Name, Type))
     axes[i,j].set_ylim(y_lim)

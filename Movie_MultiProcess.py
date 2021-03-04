@@ -27,17 +27,16 @@ Fields = {  'crht':              0,
             }
 CMAP = 'algae' #'dusk'
 FPS = 10
-Destination = '4Movies_Projection'
 #===========================#
 
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Datas_to_use = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
 DataSet = [Datas[i] for i in Datas_to_use]
-Titles = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Titles = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
 
 Start_Time = time.time()
 start_frame = 0
-end_frame = 50 #min(len(CRp),len(CRe), len(CRpS), len(CReS))
+end_frame = 51 #min(len(CRp),len(CRe), len(CRpS), len(CReS))
 n_thread = 10
 
 rc_context({'mathtext.fontset': 'stix'})
@@ -56,6 +55,7 @@ def Frame_In_Range(Start, End, Ds1, Ds2, Ds3, Ds4, Field, MAG):
                         cbar_mode = "single",
                         cbar_size = "3%",
                         cbar_pad = "3%")
+        
         M.One_Plot(0, Ds1, i, Field=Field, fig=fig, grid=grid, mag=MAG)
         M.One_Plot(1, Ds2, i, Field=Field, fig=fig, grid=grid, mag=MAG)
         M.One_Plot(2, Ds3, i, Field=Field, fig=fig, grid=grid, mag=MAG)

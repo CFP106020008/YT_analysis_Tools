@@ -10,7 +10,8 @@ import My_Plugin as M
 
 #Set the parameters
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+#Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Datas_to_use = ['CRp', 'CRe', 'CRpS']
 DataSet = [Datas[i] for i in Datas_to_use]
 
 Frame = 51
@@ -62,9 +63,10 @@ def Write_Data(Ds, Name, n_process, BubbleOnly=True):
     np.save("./EEVO_{}.npy".format(Name),OUT)
 
 # Main Code
-Write_Data(DataSet[0], Name=Datas_to_use[0],  n_process=10)
-Write_Data(DataSet[1], Name=Datas_to_use[1],  n_process=10)
-Write_Data(DataSet[2], Name=Datas_to_use[2],  n_process=10)
-Write_Data(DataSet[3], Name=Datas_to_use[3],  n_process=10)
+for i in range(len(DataSet)):
+    Write_Data(DataSet[i], Name=Datas_to_use[i],  n_process=10)
+#Write_Data(DataSet[1], Name=Datas_to_use[1],  n_process=10)
+#Write_Data(DataSet[2], Name=Datas_to_use[2],  n_process=10)
+#Write_Data(DataSet[3], Name=Datas_to_use[3],  n_process=10)
 End_Time = time.time()
 print('The code takes {} s to finish'.format(End_Time-Start_Time))
