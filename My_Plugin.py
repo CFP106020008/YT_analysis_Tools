@@ -2,6 +2,7 @@ import yt
 import numpy as np
 from yt import YTQuantity
 from yt.utilities.physical_constants import kb
+from yt.fields.api import ValidateParameter
 
 def Zlim(Field):
     ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
@@ -15,7 +16,8 @@ def Zlim(Field):
              'beta_B': [1, 1e3],
              'beta_CR': [1, 1e3],
              'beta_th': [1, 1e3],
-             'cooling_time': [3.15e16, 3.17e16]
+             'cooling_time': [3.15e16, 3.17e16],
+             'Sync': [1e7, 1e9]
             }
     return ZLIMS[Field]
 
@@ -31,7 +33,8 @@ def Zlim_Projection(Field):
              'beta_B': [1, 1e3],
              'beta_CR': [1, 1e3],
              'beta_th': [1, 1e3],
-             'cooling_time': [3.15e16, 3.17e16]
+             'cooling_time': [3.15e16, 3.17e16],
+             'Sync': [1e10, 1e25]
             }
     return ZLIMS[Field]
 
@@ -172,6 +175,16 @@ yt.add_field(function = _ek_incell,
 
 #=========================================================#
 
+# Kinetic energy in cell
+def _PV_incell(field, data):
+    return data["pres"]*data["cell_volume"]
+yt.add_field(function = _PV_incell, 
+             units = "erg", 
+             name = "PV_incell",
+             sampling_type = "cell")
+
+#=========================================================#
+
 def Heat_Cool(field, data):
     return (data["crht"]+data["csht"])*yt.YTQuantity(1,"erg/s/cm**3")/data["cooling_rate"]
 yt.add_field(   ("gas","Heating/Cooling"), 
@@ -208,6 +221,12 @@ def Eth_tot(dataset):
 
 #=========================================================#
 
+def PV_tot(dataset):
+    ds = dataset
+    return ds.all_data().quantities.total_quantity(["PV_incell"])
+
+#=========================================================#
+
 def ECR_InBub(dataset, BubbleDef, radius=50):
     ds = dataset
     sp = ds.sphere(ds.domain_center, (radius, "kpc"))
@@ -235,26 +254,35 @@ def Eth_InBub(dataset, BubbleDef, radius=50):
 
 #=========================================================#
 
+def PV_InBub(dataset, BubbleDef, radius=50):
+    ds = dataset
+    sp = ds.sphere(ds.domain_center, (radius, "kpc"))
+    CR = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    PV_InBub = CR.quantities.total_quantity("PV_incell")
+    return PV_InBub
+
+#=========================================================#
+
 def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae'):
     ds = ts[frame]
-    p = yt.SlicePlot(ds, 
-                     'x', 
-                     Field, 
-                     width=(200, 'kpc')
-                     ).set_cmap(field = Field, cmap=CMAP)
-    #p = yt.ProjectionPlot(ds, 
-    #                      'x', 
-    #                      Field, 
-    #                      width=(200, 'kpc')
-    #                      ).set_cmap(field = Field, cmap=CMAP)
+    #p = yt.SlicePlot(ds, 
+    #                 'x', 
+    #                 Field, 
+    #                 width=(200, 'kpc')
+    #                 ).set_cmap(field = Field, cmap=CMAP)
+    p = yt.ProjectionPlot(ds, 
+                          'x', 
+                          Field, 
+                          width=(200, 'kpc')
+                          ).set_cmap(field = Field, cmap=CMAP)
     if mag:
         p.annotate_magnetic_field(normalize=True)
 
     if vel:
         p.annotate_velocity(factor = 16,normalize=True)
     
-    p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
-    #p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
+    #p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
+    p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
     plot = p.plots[Field]        
     plot.figure = fig
     plot.axes = grid[i].axes
@@ -272,8 +300,37 @@ def ColdGas(dataset, Tcut=5e5):
     ds = dataset
     T = ds.r["temp"]
     MassInCell = ds.r["dens"]*ds.r["cell_volume"]
-    #print(T <= Tcut)
     ColdGasMass = np.sum(MassInCell[T <= Tcut])
     return ColdGasMass
 
 #=========================================================#
+def Sync_Emissivity(field, data, nu=10e9, gamma=2.5):
+    # nu is in Hz
+    # ds = dataset
+    sigma_T = 6.65e-25 # Thomson Cross Section
+    B = np.sqrt(data["magp"].v*8*np.pi)*1e6 # magnetic field from microG to G
+    Ub = 8*np.pi*B**2
+    c = 29979245800. # cm/s
+    q_e = 4.80e-10 # Fr
+    m_e = 9.11e-28 # g
+    MeV2erg = 1.6e-6 # Coverting factor
+    beta = 4/3*sigma_T/(m_e**2*c**3)*Ub
+    E_min = 1e2*MeV2erg / (1 + beta*Time(data.ds)*1e2*MeV2erg)
+    E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*1e5*MeV2erg)
+    nu_L = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
+    n0 = data["CR_energy_density"].v*(2-gamma)/(E_max**(2-gamma)-E_min**(2-gamma))
+    K = n0*(m_e*c**2)**(-2*gamma)
+    #print('K: ', K)
+    Constants = (3*sigma_T*c*Ub*K)/(16*np.pi**1.5*nu_L)
+    #print('Constants:', Constants)
+    Frequency = (nu/nu_L)**(-(gamma-1)/2)
+    #print('Frequency:', Frequency)
+    Angle = 3**(gamma/2)*(2.25/gamma**2.2+0.105)
+    #print('Angle:', Angle)
+    J_nu = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3")
+    #print(J_nu)
+    return J_nu
+yt.add_field(("gas", "Sync"),
+             function = Sync_Emissivity, 
+             units = "erg/s/cm**3", 
+             sampling_type = "cell")

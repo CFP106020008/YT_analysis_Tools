@@ -8,29 +8,34 @@ import My_Plugin as M
 
 #Set the parameters
 Fields = {  'crht':              0,
-            'CR_energy_density': 1,
-            'density':           1,
-            'pressure':          1,
-            'temperature':       1,
+            'CR_energy_density': 0,
+            'density':           0,
+            'pressure':          0,
+            'temperature':       0,
             'csht':              0,
             'mag_strength':      0,
             'beta_B':            0,
             'beta_CR':           0,
             'beta_th':           0,
-            'cooling_time':      0
+            'cooling_time':      0,
+            'Sync':              1
             }
 
 CMAP = 'algae' #'dusk'
 #Frames = [10,20,30,40,50]
-Frames = [19]
+Frames = [30]
 Width = 100
 #===========================#
 
-Folder_esrc = "/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*"
-Folder_SpecEvo = "/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*"
-CReS_RC = yt.load(Folder_esrc)
-CReS_SpecEvo = yt.load(Folder_SpecEvo)
-CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
+#Folder_esrc = "/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*"
+#Folder_SpecEvo = "/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*"
+#CReS_RC = yt.load(Folder_esrc)
+#CReS_SpecEvo = yt.load(Folder_SpecEvo)
+#CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
+Datas = M.Load_Simulation_Datas()
+Datas_to_use = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+DataSet = [Datas[i] for i in Datas_to_use]
+Titles = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
 
 def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
     
@@ -58,7 +63,7 @@ def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
     plt.savefig("{}_Frame={}.png".format(Field,Frame), dpi=300, bbox='tight')
     plt.close()
 
-Titles = ["CReS_RC", "CReS_SpecEvo"] # The title of each figure in the plot
+Titles = ["CRpS_RC", "CReS_SpecEvo"] # The title of each figure in the plot
 
 for key in Fields:
     if Fields[key] ==1:
@@ -68,4 +73,4 @@ for key in Fields:
         else:
             MAG = False
         for i in Frames:
-            Plot(i, CReS_RC, CReS_SpecEvo, Titles, mag=MAG)
+            Plot(i, DataSet[2], DataSet[3], Titles, mag=MAG)

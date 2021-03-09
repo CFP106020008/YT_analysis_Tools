@@ -15,9 +15,11 @@ radius = 100
 center = [0,0,0]
 FPS = 10
 #===========================#
-CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
+Datas = M.Load_Simulation_Datas()
+Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+DataSet = [Datas[i] for i in Datas_to_use]
 start_frame = 1
-end_frame = len(CRpS)
+end_frame = len(DataSet[0])
 
 n = len(Frames)
 colors = plt.cm.PuBu(np.linspace(0.3,1,n))
@@ -81,8 +83,10 @@ def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
 
 #================================================#
 # Main Code
-ALLINONE(CRpS, 'CRpS')
-ALLINONE(CReS, 'CReS')
-ALLINONE(CRp, 'CRp')
-ALLINONE(CRe, 'CRe')
+
+for i, Data in enumerate(DataSet):
+    ALLINONE(Data, Datas_to_use[i])
+#ALLINONE(CReS, 'CReS')
+#ALLINONE(CRp, 'CRp')
+#ALLINONE(CRe, 'CRe')
 

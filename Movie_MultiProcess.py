@@ -14,16 +14,17 @@ import os
 
 #Set the parameters
 Fields = {  'crht':              0,
-            'CR_energy_density': 1,
-            'density':           1,
-            'pressure':          1,
-            'temperature':       1,
-            'csht':              1,
-            'mag_strength':      1,
-            'beta_B':            1,
-            'beta_CR':           1,
-            'beta_th':           1,
-            'cooling_time':      1
+            'CR_energy_density': 0,
+            'density':           0,
+            'pressure':          0,
+            'temperature':       0,
+            'csht':              0,
+            'mag_strength':      0,
+            'beta_B':            0,
+            'beta_CR':           0,
+            'beta_th':           0,
+            'cooling_time':      0,
+            'Sync':              1
             }
 CMAP = 'algae' #'dusk'
 FPS = 10
