@@ -3,6 +3,7 @@ import numpy as np
 from yt import YTQuantity
 from yt.utilities.physical_constants import kb
 from yt.fields.api import ValidateParameter
+import os
 
 def Zlim(Field):
     ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
@@ -34,7 +35,7 @@ def Zlim_Projection(Field):
              'beta_CR': [1, 1e3],
              'beta_th': [1, 1e3],
              'cooling_time': [3.15e16, 3.17e16],
-             'Sync': [1e10, 1e25]
+             'Sync': [1e-36, 1e-30]
             }
     return ZLIMS[Field]
 
@@ -61,6 +62,19 @@ def Load_Simulation_Datas():
              'CReS_SE'      : CReS_SE,
              'CReS_SE_Small': CReS_SE_Small
             }
+    return Datas
+
+#=========================================================#
+
+def Load_E_EVO_Data():
+    path = "/data/yhlin/E_EVO"
+    files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    DataSet = [np.load(os.path.join(path, i), allow_pickle=True) for i in files]
+    Names = ['_'.join(''.join(f.split('.')[:-1]).split('_')[1:]) for f in files]
+    Datas = {}
+    for i in range(len(DataSet)):
+        Datas[Names[i]] = DataSet[i]
+    #print(Datas)
     return Datas
 
 #=========================================================#
@@ -279,14 +293,14 @@ def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae')
         p.annotate_magnetic_field(normalize=True)
 
     if vel:
-        p.annotate_velocity(factor = 16,normalize=True)
+        p.annotate_velocity(factor = 16, normalize=True)
     
     #p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
     p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
-    plot = p.plots[Field]        
+    plot = p.plots[Field]  
     plot.figure = fig
     plot.axes = grid[i].axes
-    plot.cax = grid.cbar_axes[i]
+    plot.cax = grid.cbar_axes[i]#.set_bad(color='black')
     p._setup_plots()
 
 #=========================================================#
@@ -304,9 +318,13 @@ def ColdGas(dataset, Tcut=5e5):
     return ColdGasMass
 
 #=========================================================#
-def Sync_Emissivity(field, data, nu=10e9, gamma=2.5):
+def Sync_Emissivity(field, data, gamma=2.5):
     # nu is in Hz
-    # ds = dataset
+    #if data.has_field_parameter("frequency"):
+    #    nu = data.get_field_parameter("frequency").in_units("Hz")
+    #else:
+    #    nu = 1.e9
+    nu = 1.51e8 #Hz
     sigma_T = 6.65e-25 # Thomson Cross Section
     B = np.sqrt(data["magp"].v*8*np.pi)*1e6 # magnetic field from microG to G
     Ub = 8*np.pi*B**2
@@ -319,18 +337,31 @@ def Sync_Emissivity(field, data, nu=10e9, gamma=2.5):
     E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*1e5*MeV2erg)
     nu_L = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
     n0 = data["CR_energy_density"].v*(2-gamma)/(E_max**(2-gamma)-E_min**(2-gamma))
-    K = n0*(m_e*c**2)**(-2*gamma)
-    #print('K: ', K)
+    K = n0*(m_e*c**2)**(gamma+1)
     Constants = (3*sigma_T*c*Ub*K)/(16*np.pi**1.5*nu_L)
-    #print('Constants:', Constants)
     Frequency = (nu/nu_L)**(-(gamma-1)/2)
-    #print('Frequency:', Frequency)
     Angle = 3**(gamma/2)*(2.25/gamma**2.2+0.105)
-    #print('Angle:', Angle)
-    J_nu = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3")
-    #print(J_nu)
+    J_nu = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3/Hz")
     return J_nu
 yt.add_field(("gas", "Sync"),
              function = Sync_Emissivity, 
-             units = "erg/s/cm**3", 
+             units = "erg/s/cm**3/Hz", 
              sampling_type = "cell")
+
+#=========================================================#
+
+def Sync_incell(field, data):
+    return data["Sync"]*data["cell_volume"]#*YTQuantity(1.,"cm**3")
+yt.add_field(("gas", "Sync_incell"),
+             function = Sync_incell, 
+             units = "erg/s/Hz", 
+             sampling_type = "cell")
+
+#=========================================================#
+
+def LR_Total(ds):
+    return ds.all_data().quantities.total_quantity(["Sync_incell"])
+
+#=========================================================#
+
+

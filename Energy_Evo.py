@@ -48,8 +48,9 @@ def Frames_in_range(Frame1, Frame2, Ds, BubbleDef, OUT):
         OUT[2,i,1] = M.Ek_tot(Ds[i])
         OUT[1,i,2] = M.Eth_InBub(Ds[i], BubbleDef=BubbleDef)
         OUT[2,i,2] = M.Eth_tot(Ds[i])
-        OUT[1,i,2] = M.PV_InBub(Ds[i], BubbleDef=BubbleDef)
-        OUT[2,i,2] = M.PV_tot(Ds[i])
+        OUT[1,i,3] = M.PV_InBub(Ds[i], BubbleDef=BubbleDef)
+        OUT[2,i,3] = M.PV_tot(Ds[i])
+
 
 def Write_Data(Ds, Name, n_process, BubbleOnly=True):
     Lost = Frame%n_process

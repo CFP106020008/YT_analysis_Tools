@@ -31,9 +31,9 @@ FPS = 10
 #===========================#
 
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
 DataSet = [Datas[i] for i in Datas_to_use]
-Titles = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Titles = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
 
 Start_Time = time.time()
 start_frame = 0

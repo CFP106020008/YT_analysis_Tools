@@ -21,6 +21,7 @@ Fields = {  'crht':              0,
             'Sync':              1
             }
 
+#CMAP = 'B-W LINEAR'#'algae' #'dusk'
 CMAP = 'algae' #'dusk'
 #Frames = [10,20,30,40,50]
 Frames = [30]
@@ -53,8 +54,8 @@ def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
                     cbar_size = "3%",
                     cbar_pad = "0%")
 
-    M.One_Plot(0, Ds1, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
-    M.One_Plot(1, Ds2, Frame, Field=Field, fig=fig, grid=grid, mag=MAG)
+    M.One_Plot(0, Ds1, Frame, Field=Field, fig=fig, grid=grid, mag=MAG, CMAP=CMAP)
+    M.One_Plot(1, Ds2, Frame, Field=Field, fig=fig, grid=grid, mag=MAG, CMAP=CMAP)
     
     grid[0].axes.set_title(Titles[0], fontsize=20)
     grid[1].axes.set_title(Titles[1], fontsize=20)
