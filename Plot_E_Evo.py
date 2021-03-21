@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 DS1 = np.load("/data/yhlin/E_EVO/EEVO_CReS.npy")
 DS2 = np.load("/data/yhlin/E_EVO/EEVO_CReS_RC.npy")
 DS3 = np.load("/data/yhlin/E_EVO/EEVO_CReS_SE.npy")
-DS4 = np.load("/data/yhlin/E_EVO/EEVO_CReS_SE_Small.npy")
+DS4 = np.load("/data/yhlin/E_EVO/EEVO_CReS_SE_CB.npy")
 
 #Plot_dE = True
 PlotDE = True #False
@@ -24,7 +24,7 @@ def Total_Energy(Data):
 def Plot_dE(i, j, k, Datas, Name, Color, Type): #Note that k=1 is for bubble, k=2 is for total field    
     axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,0])[1:], linestyle='--', color=Color, label=r"$E_{CR}$")
     axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,1])[1:], linestyle='-.', color=Color, label=r"$E_k$"   )
-    axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,2])[1:b], linestyle=':' , color=Color, label=r"$E_{th}$")
+    axes[i,j].semilogy(Time[1:], Delta_Energy(Datas[k,:,2])[1:], linestyle=':' , color=Color, label=r"$E_{th}$")
     axes[i,j].semilogy(Time[1:], Delta_Energy(Total_Energy(Datas[k,:,:]))[1:], linestyle='-' , color=Color, label=r"$E_{tot}$")
     axes[i,j].set_title("{} Jet ({})".format(Name, Type))
     axes[i,j].set_ylim(y_lim)
@@ -46,7 +46,7 @@ if PlotDE:
     Plot_dE(0, 0, 1, DS1, 'CReS', 'b', 'Bubble')
     Plot_dE(0, 1, 1, DS2, 'CReS_RC', 'b', 'Bubble')
     Plot_dE(1, 0, 1, DS3, 'CReS_SE', 'b', 'Bubble')
-    Plot_dE(1, 1, 1, DS4, 'CReS_SE_Small', 'b', 'Bubble')
+    Plot_dE(1, 1, 1, DS4, 'CReS_SE_CB', 'b', 'Bubble')
     fig.text(0.5, 0.08, r'Time (Myr)', ha='center')
     fig.text(0.04, 0.5, '$E-E_{0} (erg)$', va='center', rotation='vertical')
 else:

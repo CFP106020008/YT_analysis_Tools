@@ -54,13 +54,17 @@ def Load_Simulation_Datas():
     CReS_RC = yt.load("/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*")
     CReS_SE = yt.load("/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*")
     CReS_SE_Small = yt.load("/data/yhlin/CReS_Emin=1e-2/crbub_hdf5_plt_cnt_*")
+    CReS_SE_CB_Emin100MeV = yt.load("/data/yhlin/CReS_SE_ConstantB/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
+    CReS_SE_CB_Emin1GeV = yt.load("/data/yhlin/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
     Datas = {'CRp'          : CRp,
              'CRe'          : CRe,
              'CRpS'         : CRpS,
              'CReS'         : CReS,
              'CReS_RC'      : CReS_RC,
              'CReS_SE'      : CReS_SE,
-             'CReS_SE_Small': CReS_SE_Small
+             'CReS_SE_Small': CReS_SE_Small,
+             'CReS_SE_CB_Small'   : CReS_SE_CB_Emin100MeV,
+             'CReS_SE_CB_Large'   : CReS_SE_CB_Emin1GeV
             }
     return Datas
 
@@ -277,26 +281,29 @@ def PV_InBub(dataset, BubbleDef, radius=50):
 
 #=========================================================#
 
-def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae'):
+def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae', Type='Slice'):
     ds = ts[frame]
-    #p = yt.SlicePlot(ds, 
-    #                 'x', 
-    #                 Field, 
-    #                 width=(200, 'kpc')
-    #                 ).set_cmap(field = Field, cmap=CMAP)
-    p = yt.ProjectionPlot(ds, 
-                          'x', 
-                          Field, 
-                          width=(200, 'kpc')
-                          ).set_cmap(field = Field, cmap=CMAP)
+    if Type == 'Projection':
+        p = yt.SlicePlot(ds, 
+                         'x', 
+                         Field, 
+                         width=(200, 'kpc')
+                         ).set_cmap(field = Field, cmap=CMAP)
+        p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
+    else:
+        p = yt.ProjectionPlot(ds, 
+                              'x', 
+                              Field, 
+                              width=(200, 'kpc')
+                              ).set_cmap(field = Field, cmap=CMAP)
+        p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
+    
     if mag:
         p.annotate_magnetic_field(normalize=True)
 
     if vel:
         p.annotate_velocity(factor = 16, normalize=True)
     
-    #p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
-    p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
     plot = p.plots[Field]  
     plot.figure = fig
     plot.axes = grid[i].axes
@@ -319,29 +326,29 @@ def ColdGas(dataset, Tcut=5e5):
 
 #=========================================================#
 def Sync_Emissivity(field, data, gamma=2.5):
-    # nu is in Hz
-    #if data.has_field_parameter("frequency"):
-    #    nu = data.get_field_parameter("frequency").in_units("Hz")
-    #else:
-    #    nu = 1.e9
-    nu = 1.51e8 #Hz
+    nu    = 1.51e8 # Hz
     sigma_T = 6.65e-25 # Thomson Cross Section
-    B = np.sqrt(data["magp"].v*8*np.pi)*1e6 # magnetic field from microG to G
-    Ub = 8*np.pi*B**2
-    c = 29979245800. # cm/s
-    q_e = 4.80e-10 # Fr
-    m_e = 9.11e-28 # g
+    B     = 1e-6 # G
+    Ub    = B**2/(8*np.pi) # erg/cm**3
+    #B2    = np.sqrt(data["magp"].v*8*np.pi)
+    #Ub2   = B2**2/(8*np.pi)
+    c     = 29979245800. # cm/s
+    q_e   = 4.80e-10 # Fr (e.s.u)
+    m_e   = 9.11e-28 # g
     MeV2erg = 1.6e-6 # Coverting factor
-    beta = 4/3*sigma_T/(m_e**2*c**3)*Ub
-    E_min = 1e2*MeV2erg / (1 + beta*Time(data.ds)*1e2*MeV2erg)
-    E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*1e5*MeV2erg)
-    nu_L = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
-    n0 = data["CR_energy_density"].v*(2-gamma)/(E_max**(2-gamma)-E_min**(2-gamma))
-    K = n0*(m_e*c**2)**(gamma+1)
+    Urad  = 4.2e-13 # erg/cm**3 from CMB photon
+    Utot  = Ub + Urad
+    Myr2s = 3.1556926e13
+    beta  = 4/3*sigma_T/(m_e**2*c**3)*Utot
+    E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e5*MeV2erg)
+    E_min = 1e3*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e3*MeV2erg)
+    nu_L  = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
+    n0    = data["CR_energy_density"].v*(2-gamma)/(E_max**(2-gamma)-E_min**(2-gamma))
+    K     = n0*(m_e*c**2)**(-gamma)
     Constants = (3*sigma_T*c*Ub*K)/(16*np.pi**1.5*nu_L)
     Frequency = (nu/nu_L)**(-(gamma-1)/2)
     Angle = 3**(gamma/2)*(2.25/gamma**2.2+0.105)
-    J_nu = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3/Hz")
+    J_nu  = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3/Hz")
     return J_nu
 yt.add_field(("gas", "Sync"),
              function = Sync_Emissivity, 

@@ -10,7 +10,7 @@ import My_Plugin as M
 
 #Set the parameters
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small', 'CRp', 'CRe', 'CRpS']
+Datas_to_use = ['CReS_SE_CB_Large']#['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small', 'CRp', 'CRe', 'CRpS']
 DataSet = [Datas[i] for i in Datas_to_use]
 
 Frame = 51
