@@ -31,13 +31,13 @@ FPS = 10
 #===========================#
 
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_CB']
+Datas_to_use = ['CRp', 'CRe', 'CRpS', 'CReS']
 DataSet = [Datas[i] for i in Datas_to_use]
-Titles = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_CB']
+Titles = ['CRp', 'CRe', 'CRpS', 'CReS']
 
 Start_Time = time.time()
 start_frame = 0
-end_frame = 51 #min(len(CRp),len(CRe), len(CRpS), len(CReS))
+end_frame = min(len(CRp),len(CRe), len(CRpS), len(CReS))
 n_thread = 10
 
 rc_context({'mathtext.fontset': 'stix'})
@@ -57,10 +57,10 @@ def Frame_In_Range(Start, End, Ds1, Ds2, Ds3, Ds4, Field, MAG):
                         cbar_size = "3%",
                         cbar_pad = "3%")
         
-        M.One_Plot(0, Ds1, i, Field=Field, fig=fig, grid=grid, mag=MAG)
-        M.One_Plot(1, Ds2, i, Field=Field, fig=fig, grid=grid, mag=MAG)
-        M.One_Plot(2, Ds3, i, Field=Field, fig=fig, grid=grid, mag=MAG)
-        M.One_Plot(3, Ds4, i, Field=Field, fig=fig, grid=grid, mag=MAG)
+        M.One_Plot(0, Ds1, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
+        M.One_Plot(1, Ds2, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
+        M.One_Plot(2, Ds3, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
+        M.One_Plot(3, Ds4, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
         grid[0].axes.set_title(Titles[0], fontsize=20)
         grid[1].axes.set_title(Titles[1], fontsize=20)
         grid[2].axes.set_title(Titles[2], fontsize=20)

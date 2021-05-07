@@ -7,18 +7,20 @@ import os
 
 def Zlim(Field):
     ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
-             'CR_energy_density':[1e-15, 1e-5],
-             'density':[1e-27, 1e-24],
-             'temperature':[1e7, 1e9],
+             'CR_energy_density':[1.e-10, 3.e-9],
+             'density':[1e-27, 2e-25],
+             'temperature':[2e7, 3e8],
+             #'temperature':[5e4, 5e6],
              'crht':[1e-29, 1e-25],
-             'pressure':[1e-11, 1e-8],
+             'pressure':[1e-10, 1e-9],
              'csht':[1e-29, 1e-25],
              'mag_strength':[1e-7, 1e-5],
-             'beta_B': [1, 1e3],
+             'beta_B':  [1, 1e3],
              'beta_CR': [1, 1e3],
-             'beta_th': [1, 1e3],
+             'beta_th': [1, 3],
              'cooling_time': [3.15e16, 3.17e16],
-             'Sync': [1e7, 1e9]
+             'Sync': [1e-10, 1e-7],
+             'Xray_Emissivity': [4e-24, 3e-23]
             }
     return ZLIMS[Field]
 
@@ -35,7 +37,8 @@ def Zlim_Projection(Field):
              'beta_CR': [1, 1e3],
              'beta_th': [1, 1e3],
              'cooling_time': [3.15e16, 3.17e16],
-             'Sync': [1e-36, 1e-30]
+             'Sync': [1e-36, 1e-30],
+             'Xray_Emissivity': [1e-10, 1e-7]
             }
     return ZLIMS[Field]
 
@@ -43,10 +46,10 @@ def Zlim_Projection(Field):
 
 # Loading all the file folders
 def Load_Simulation_Datas():
-    Folder_ps = "/data/yhlin/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-    Folder_es = "/data/yhlin/CRe_Streaming/crbub_hdf5_plt_cnt_*"
-    Folder_p  = "/data/yhlin/CRp_NS/crbub_hdf5_plt_cnt_*"
-    Folder_e  = "/data/yhlin/CRe_NS/crbub_hdf5_plt_cnt_*"
+    Folder_ps = "/data/yhlin/Final_Sims/CRp_Streaming/crbub_hdf5_plt_cnt_*"
+    Folder_es = "/data/yhlin/Final_Sims/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*"
+    Folder_p  = "/data/yhlin/Final_Sims/CRp_NS/crbub_hdf5_plt_cnt_*"
+    Folder_e  = "/data/yhlin/Final_Sims/CRe/crbub_hdf5_plt_cnt_*"
     CRp = yt.load(Folder_p) #Proton Jet dataset
     CRe = yt.load(Folder_e) #Electron Jet dataset
     CRpS = yt.load(Folder_ps) #Proton Jet dataset
@@ -55,7 +58,7 @@ def Load_Simulation_Datas():
     CReS_SE = yt.load("/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*")
     CReS_SE_Small = yt.load("/data/yhlin/CReS_Emin=1e-2/crbub_hdf5_plt_cnt_*")
     CReS_SE_CB_Emin100MeV = yt.load("/data/yhlin/CReS_SE_ConstantB/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
-    CReS_SE_CB_Emin1GeV = yt.load("/data/yhlin/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
+    CReS_SE_CB_Emin1GeV = yt.load("/data/yhlin/Final_Sims/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
     Datas = {'CRp'          : CRp,
              'CRe'          : CRe,
              'CRpS'         : CRpS,
@@ -72,7 +75,7 @@ def Load_Simulation_Datas():
 
 def Load_E_EVO_Data():
     path = "/data/yhlin/E_EVO"
-    files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    files = [f for f in os.listdir(path) if (os.path.isfile(os.path.join(path, f)) and f.endswith(".npy"))]
     DataSet = [np.load(os.path.join(path, i), allow_pickle=True) for i in files]
     Names = ['_'.join(''.join(f.split('.')[:-1]).split('_')[1:]) for f in files]
     Datas = {}
@@ -221,6 +224,15 @@ yt.add_field(   ("gas","CR_Heating"),
 
 #=========================================================#
 
+def Xray_Emissivity(field, data):
+    return data["density"]**2*data["temperature"]**0.5*yt.YTQuantity(1,"erg/s*cm**3/g**2/K**0.5")
+yt.add_field(("gas","Xray_Emissivity"), 
+             function = Xray_Emissivity, 
+             units="erg/s/cm**3",
+             sampling_type = "cell")
+
+#=========================================================#
+
 def ECR_tot(dataset):
     ds = dataset
     return ds.all_data().quantities.total_quantity(["CR_energy_incell"])
@@ -284,18 +296,18 @@ def PV_InBub(dataset, BubbleDef, radius=50):
 def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae', Type='Slice'):
     ds = ts[frame]
     if Type == 'Projection':
-        p = yt.SlicePlot(ds, 
+        p = yt.ProjectionPlot(ds, 
                          'x', 
                          Field, 
                          width=(200, 'kpc')
                          ).set_cmap(field = Field, cmap=CMAP)
-        p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
+        #p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
     else:
-        p = yt.ProjectionPlot(ds, 
-                              'x', 
-                              Field, 
-                              width=(200, 'kpc')
-                              ).set_cmap(field = Field, cmap=CMAP)
+        p = yt.SlicePlot(ds, 
+                         'x', 
+                         Field, 
+                         width=((50, 'kpc'), (100, 'kpc'))
+                         ).set_cmap(field = Field, cmap=CMAP)
         p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
     
     if mag:
@@ -325,34 +337,44 @@ def ColdGas(dataset, Tcut=5e5):
     return ColdGasMass
 
 #=========================================================#
-def Sync_Emissivity(field, data, gamma=2.5):
-    nu    = 1.51e8 # Hz
-    sigma_T = 6.65e-25 # Thomson Cross Section
-    B     = 1e-6 # G
-    Ub    = B**2/(8*np.pi) # erg/cm**3
-    #B2    = np.sqrt(data["magp"].v*8*np.pi)
-    #Ub2   = B2**2/(8*np.pi)
-    c     = 29979245800. # cm/s
-    q_e   = 4.80e-10 # Fr (e.s.u)
-    m_e   = 9.11e-28 # g
-    MeV2erg = 1.6e-6 # Coverting factor
-    Urad  = 4.2e-13 # erg/cm**3 from CMB photon
-    Utot  = Ub + Urad
+def Sync_Emissivity(field, data, p=2.5):
+    
+    # Constants
     Myr2s = 3.1556926e13
+    q_e   = 4.80e-10 # Fr (e.s.u)
+    #q_e   = 1.602176634e-20 # e.m.u
+    m_e   = 9.11e-28 # g
+    sigma_T = 6.65e-25 # Thomson Cross Section
+    c     = 29979245800. # cm/s
+    MeV2erg = 1.6e-6 # Coverting factor
+    
+    # Parameters
+    nu    = 1.51e8 # Hz, frequency of the observation
+    B     = 1e-6 # G
+    Urad  = 4.2e-13 # erg/cm**3 energy density of CMB photon at z=0
+    
+    # Derived quantities
+    Ub    = B**2/(8*np.pi) # erg/cm**3
+    Utot  = Ub + Urad
     beta  = 4/3*sigma_T/(m_e**2*c**3)*Utot
+    nu_L  = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
+    
+    # Evolution of the energy range
     E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e5*MeV2erg)
     E_min = 1e3*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e3*MeV2erg)
-    nu_L  = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
-    n0    = data["CR_energy_density"].v*(2-gamma)/(E_max**(2-gamma)-E_min**(2-gamma))
-    K     = n0*(m_e*c**2)**(-gamma)
+    
+    # Number density
+    n0    = data["CR_energy_density"].v*(2-p)/(E_max**(2-p)-E_min**(2-p))
+    K     = n0*(m_e*c**2)**(1-p)
     Constants = (3*sigma_T*c*Ub*K)/(16*np.pi**1.5*nu_L)
-    Frequency = (nu/nu_L)**(-(gamma-1)/2)
-    Angle = 3**(gamma/2)*(2.25/gamma**2.2+0.105)
-    J_nu  = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3/Hz")
-    return J_nu
+    Frequency = (nu/nu_L)**((1-p)/2)
+    Angle = 3**(p/2)*(2.25/p**2.2+0.105)
+    epsilon_nu  = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3")
+    return epsilon_nu
+
 yt.add_field(("gas", "Sync"),
              function = Sync_Emissivity, 
-             units = "erg/s/cm**3/Hz", 
+             units = "erg/s/cm**3", 
              sampling_type = "cell")
 
 #=========================================================#
@@ -361,7 +383,7 @@ def Sync_incell(field, data):
     return data["Sync"]*data["cell_volume"]#*YTQuantity(1.,"cm**3")
 yt.add_field(("gas", "Sync_incell"),
              function = Sync_incell, 
-             units = "erg/s/Hz", 
+             units = "erg/s", 
              sampling_type = "cell")
 
 #=========================================================#

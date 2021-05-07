@@ -16,7 +16,7 @@ center = [0,0,0]
 FPS = 10
 #===========================#
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Datas_to_use = ['CRp', 'CRe', 'CRpS', 'CReS']
 DataSet = [Datas[i] for i in Datas_to_use]
 start_frame = 1
 end_frame = len(DataSet[0])
@@ -25,9 +25,8 @@ n = len(Frames)
 colors = plt.cm.PuBu(np.linspace(0.3,1,n))
 
 # Set the plots
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4.5), sharey=True)
-ax.set_xlabel("Radius (kpc)")
-ax.set_ylabel(r'$(erg/s/cm^3)$')
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(9,8), sharey=True, sharex=True)
+plt.subplots_adjust(left=0.125, bottom=0.15, right=0.8, top=0.85, wspace=0.1, hspace=0.2)
 
 def set_lim(ax): # Set the limit of the plots
     ax.set_xlim([0,radius])
@@ -41,18 +40,24 @@ def Profile(Ds, frame, Field): # Calculating the profiles
                            logs = {'radius': False})
     return [P.x.value, P[Field].value]
 #================================================#
-def ALLINONE(Ds, Name, fig=fig, ax=ax): # Overplot all the profiles in one plot
-    set_lim(ax)
+def ALLINONE(i, Ds, Name, ax, fig=fig): # Overplot all the profiles in one plot
+    #set_lim(ax)
     [x, y] = Profile(Ds, 0, 'cooling_rate')
     ax.semilogy(x, y, linestyle='dashed',label='Cooling Rate at t = {:03.0f} Myr'.format(M.Time(Ds[0])))
-    for i, frame in enumerate(Frames):
+    for j, frame in enumerate(Frames):
         [x, y] = Profile(Ds, frame, 'CR_Heating')
-        ax.semilogy(x, y, color=colors[i], label='CR Heating Rate at t = {:03.0f} Myr'.format(M.Time(Ds[frame])))
-    plt.legend()
-    plt.savefig("Heat_Cool_Spherical_Profile_{}.png".format(Name), dpi=300)
-    ax.clear()
+        ax.semilogy(x, y, color=colors[j], label='t = {:03.0f} Myr'.format(M.Time(Ds[frame])))
+    if i/2 >= 1:
+        ax.set_xlabel("Radius (kpc)")
+    if i%2 == 0:
+        ax.set_ylabel(r'$(erg/s/cm^3)$')
+    ax.set_title(Name)
+    ax.set_xlim([0,radius])
+    ax.set_ylim([1e-28,1e-24])
+    #plt.savefig("Heat_Cool_Spherical_Profile_{}.png".format(Name), dpi=300)
+    #ax.clear()
 #================================================#
-def ANIME(Ds, fig=fig, ax=ax): # Making animation
+def ANIME(Ds, ax, fig=fig): # Making animation
     c, = ax.semilogy([], [], label="Cooling Rate", color='b')
     h, = ax.semilogy([], [], label="Heating Rate", color='r')
     def animate(i):
@@ -70,7 +75,7 @@ def ANIME(Ds, fig=fig, ax=ax): # Making animation
                               )
     animation.save('HeatCoolProfile.mp4', dpi=300)
 #================================================#
-def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
+def SEQUENCE(Ds, ax, fig=fig): # Making sequence of plots
     c, = ax.semilogy([], [], label="Cooling Rate", color='b')
     h, = ax.semilogy([], [], label="Heating Rate", color='r')
     for frame in Frames:
@@ -85,8 +90,8 @@ def SEQUENCE(Ds, fig=fig, ax=ax): # Making sequence of plots
 # Main Code
 
 for i, Data in enumerate(DataSet):
-    ALLINONE(Data, Datas_to_use[i])
-#ALLINONE(CReS, 'CReS')
-#ALLINONE(CRp, 'CRp')
-#ALLINONE(CRe, 'CRe')
-
+    ALLINONE(i, Data, Datas_to_use[i], ax=axes[int(i/2), i%2])
+handles, labels = axes[0,0].get_legend_handles_labels()
+fig.legend(handles[1:], labels[1:], loc='center right')
+#plt.tight_layout()
+plt.savefig("Heat_Cool_Spherical_Profile.png", dpi=300)

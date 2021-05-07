@@ -4,13 +4,14 @@ import threading
 import multiprocessing as mp
 import multiprocessing.managers as mpman
 import time
+import os
 import matplotlib.pyplot as plt
 from matplotlib import rc_context
 import My_Plugin as M
 
 #Set the parameters
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CReS_SE_CB_Large']#['CReS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small', 'CRp', 'CRe', 'CRpS']
+Datas_to_use = ['CRe', 'CReS'] #, 'CReS_RC', 'CReS_SE', 'CReS_SE_Small', 'CRp', 'CRe', , 'CRpS''CReS_SE_CB_Small']
 DataSet = [Datas[i] for i in Datas_to_use]
 
 Frame = 51
@@ -31,8 +32,8 @@ def Set_Table():
     # Store data in an np array
     # First axis: Time, Proton, Electron
     # Second axis: Time series
-    # Third axis: CR, Kinetic, Thermal field
-    OUT = m.np_ones((3,len(DataSet[0]),4)) 
+    # Third axis: CR, Kinetic, Thermal field, PV, LR_151MHz
+    OUT = m.np_ones((3,len(DataSet[0]),5)) 
     for i in range(3):
         OUT[0,:,i] = np.linspace(M.Time(DataSet[0][0]), M.Time(DataSet[0][-1]), len(DataSet[0]))
     return OUT
@@ -50,6 +51,7 @@ def Frames_in_range(Frame1, Frame2, Ds, BubbleDef, OUT):
         OUT[2,i,2] = M.Eth_tot(Ds[i])
         OUT[1,i,3] = M.PV_InBub(Ds[i], BubbleDef=BubbleDef)
         OUT[2,i,3] = M.PV_tot(Ds[i])
+        OUT[2,i,4] = M.LR_Total(Ds[i])
 
 
 def Write_Data(Ds, Name, n_process, BubbleOnly=True):
@@ -68,4 +70,5 @@ def Write_Data(Ds, Name, n_process, BubbleOnly=True):
 for i in range(len(DataSet)):
     Write_Data(DataSet[i], Name=Datas_to_use[i],  n_process=10)
 End_Time = time.time()
+os.system('rm My_Plugin.py')
 print('The code takes {} s to finish'.format(End_Time-Start_Time))

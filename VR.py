@@ -7,23 +7,8 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 import My_Plugin as M
 
 #Set the parameters
-Folder_p = "./CRp_Streaming/crbub_hdf5_plt_cnt_*"
-Folder_e = "./CRe_Streaming/crbub_hdf5_plt_cnt_*"
-#Field = 'Heating/Cooling'
-Field = 'CR_energy_density'
-#Field = 'density'
-#Field = 'pressure'
-#Field = 'temperature'
-CMAP = 'algae' #'dusk'
-Frames = [1,10,20,30,40,50]
-#===========================#
 
-ts_p = yt.load(Folder_p) #Proton Jet dataset
-ts_e = yt.load(Folder_e) #Electron Jet dataset
-
-fns = [ts_p, ts_e] # Total set of datas
-
-ds = ts_p[-1]
+ds = 
 sc = yt.create_scene(ds, Field)
 
 cam = sc.camera

@@ -22,26 +22,21 @@ Fields = {  'crht':              0,
             }
 
 #CMAP = 'B-W LINEAR'#'algae' #'dusk'
-CMAP = 'algae' #'dusk'
+CMAP = 'inferno'#'algae' #'dusk'
 #Frames = [10,20,30,40,50]
 Frames = [30]
 Width = 100
 #===========================#
 
-#Folder_esrc = "/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*"
-#Folder_SpecEvo = "/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*"
-#CReS_RC = yt.load(Folder_esrc)
-#CReS_SpecEvo = yt.load(Folder_SpecEvo)
-#CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Datas_to_use = ['CRe', 'CReS']
 DataSet = [Datas[i] for i in Datas_to_use]
-Titles = ['CRpS', 'CReS_RC', 'CReS_SE', 'CReS_SE_Small']
+Titles = ['CRe', 'CReS']
 
 def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
     
     # Set up the figures
-    fig = plt.figure(figsize=(16,16))
+    fig = plt.figure(figsize=(16,8))
     rc_context({'mathtext.fontset': 'stix'})
     grid = AxesGrid(fig, 
                     (0.090,0.015,0.80,0.9),
@@ -64,7 +59,27 @@ def Plot(Frame, Ds1, Ds2, Titles, mag=False, vel=False):
     plt.savefig("{}_Frame={}.png".format(Field,Frame), dpi=300, bbox='tight')
     plt.close()
 
-Titles = ["CRpS_RC", "CReS_SpecEvo"] # The title of each figure in the plot
+def Big_Plot(DS, Titles, Epochs):
+    fig = plt.figure(figsize=(10,10))
+    rc_context({'mathtext.fontset': 'stix'})
+    grid = AxesGrid(fig, 
+                    (0.05,0.05,0.8,0.9),
+                    nrows_ncols = (len(DS), len(Epochs)),
+                    axes_pad = 0.,
+                    label_mode = "L",
+                    share_all = True,
+                    cbar_location = "right",
+                    cbar_mode = "single",
+                    cbar_size = "3%",
+                    cbar_pad = "0%")
+    for i, ds in enumerate(DS):
+        for j, frame in enumerate(Epochs):
+            ID = i*len(Epochs) + j
+            M.One_Plot(ID, ds, frame, Field=Field, fig=fig, grid=grid, mag=MAG, CMAP=CMAP)
+            grid[ID].axes.xaxis.set_visible(False)
+            grid[ID].axes.yaxis.set_visible(False)
+    fig.savefig("Multi_Compare.png", dpi=300)
+    plt.close()
 
 for key in Fields:
     if Fields[key] ==1:
@@ -74,4 +89,5 @@ for key in Fields:
         else:
             MAG = False
         for i in Frames:
-            Plot(i, DataSet[2], DataSet[3], Titles, mag=MAG)
+            #Big_Plot(DataSet, Titles, [1,10,20,30,40,50])
+            Plot(i, DataSet[0], DataSet[1], Titles, mag=MAG)
