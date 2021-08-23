@@ -9,7 +9,7 @@ from matplotlib import rc_context
 import matplotlib.ticker as ticker
 
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CRpS','CReS_SE_CB_Large']#,'CReS_SE_CB_Small']
+Datas_to_use = ['CRpS','CReS']
 DataSet = [Datas[i] for i in Datas_to_use]
 Titles = [r'$\mathrm{CRpS}$',r'$\mathrm{CReS}$']#,r'$\mathrm{CReS~0.01GeV}$']
 
@@ -37,11 +37,11 @@ orient = 'horizontal'
 fig, axes, colorbars = get_multi_plot(len(Fields), len(DataSet), colorbar=orient, bw = 3)
 
 cmaps = [
-         'inferno',
+         'gist_heat',
          'inferno',
          'inferno', 
-         'inferno',
-         'inferno'
+         'Blues',
+         'Blues'
          ]
 
 Frame = 35
@@ -56,9 +56,12 @@ def One_Axis(i, j, DS, Field, Frame, width=width, res=res, fig=fig, axes=axes, c
     Axis.xaxis.set_visible(False)
     Axis.yaxis.set_visible(False)
     Arr = np.transpose(np.array(frb[Field]))
-    plots.append(Axis.imshow(Arr, norm=LogNorm()))
-    plots[-1].set_clim((M.Zlim(Field)[0], M.Zlim(Field)[1]))
-    plots[-1].set_cmap(CMAP)
+    Arr[Arr<1e-20] = 1e-20
+    plots.append(Axis.imshow(Arr, 
+                             norm=LogNorm(),
+                             vmin=M.Zlim(Field)[0], 
+                             vmax=M.Zlim(Field)[1], 
+                             cmap=CMAP))
     if j == 0:
         Axis.text(0.05, 0.95, Titles[i], c='w', horizontalalignment='left', verticalalignment='top', transform=Axis.transAxes, fontsize=15)
 
@@ -75,12 +78,18 @@ titles = [
             ]
 
 for p, cax, t, Field in zip(plots, colorbars, titles, Fields):
-    print(p, cax, t, Field)
-    cbar = fig.colorbar(p, cax=cax, orientation=orient, format=ticker.LogFormatterMathtext())#, ticks=M.Zlim(Field))
-    
+    #print(p, cax, t, Field)
+    cbar = fig.colorbar(p, 
+                        cax=cax, 
+                        orientation=orient, 
+                        format=ticker.LogFormatterMathtext()
+                        #format=ticker.LogFormatterSciNotation()
+                        )#, ticks=M.Zlim(Field))
     cbar.set_label(t)
-    cbar.ax.xaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
+    #cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=45)
+    #cbar.ax.xaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
+    #cbar.update_normal(p)
+    #cbar.ax.set_xticklabels([])
 
 # And now we're done!
-#plt.tight_layout()
 fig.savefig("Field_Sequence.png", dpi=300)

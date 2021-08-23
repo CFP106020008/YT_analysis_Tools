@@ -7,12 +7,12 @@ import os
 
 def Zlim(Field):
     ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
-             'CR_energy_density':[1.e-10, 3.e-9],
+             'CR_energy_density':[1.e-10, 1.e-9],
              'density':[1e-27, 2e-25],
              'temperature':[2e7, 3e8],
              #'temperature':[5e4, 5e6],
              'crht':[1e-29, 1e-25],
-             'pressure':[1e-10, 1e-9],
+             'pressure':[1.e-10, 1.e-9],
              'csht':[1e-29, 1e-25],
              'mag_strength':[1e-7, 1e-5],
              'beta_B':  [1, 1e3],
@@ -37,7 +37,7 @@ def Zlim_Projection(Field):
              'beta_CR': [1, 1e3],
              'beta_th': [1, 1e3],
              'cooling_time': [3.15e16, 3.17e16],
-             'Sync': [1e-36, 1e-30],
+             'Sync': [1e-30, 1e-10],
              'Xray_Emissivity': [1e-10, 1e-7]
             }
     return ZLIMS[Field]
@@ -293,20 +293,20 @@ def PV_InBub(dataset, BubbleDef, radius=50):
 
 #=========================================================#
 
-def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='algae', Type='Slice'):
+def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='inferno', Type='Slice'):
     ds = ts[frame]
     if Type == 'Projection':
         p = yt.ProjectionPlot(ds, 
                          'x', 
                          Field, 
-                         width=(200, 'kpc')
+                         width=(100, 'kpc')
                          ).set_cmap(field = Field, cmap=CMAP)
         #p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
     else:
         p = yt.SlicePlot(ds, 
                          'x', 
                          Field, 
-                         width=((50, 'kpc'), (100, 'kpc'))
+                         width=((100, 'kpc'), (100, 'kpc'))
                          ).set_cmap(field = Field, cmap=CMAP)
         p.set_zlim(Field, Zlim(Field)[0], Zlim(Field)[1])
     
@@ -342,7 +342,6 @@ def Sync_Emissivity(field, data, p=2.5):
     # Constants
     Myr2s = 3.1556926e13
     q_e   = 4.80e-10 # Fr (e.s.u)
-    #q_e   = 1.602176634e-20 # e.m.u
     m_e   = 9.11e-28 # g
     sigma_T = 6.65e-25 # Thomson Cross Section
     c     = 29979245800. # cm/s
@@ -362,7 +361,10 @@ def Sync_Emissivity(field, data, p=2.5):
     # Evolution of the energy range
     E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e5*MeV2erg)
     E_min = 1e3*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e3*MeV2erg)
-    
+    print(beta)
+    print(Time(data.ds))
+    print(E_max, E_min)
+
     # Number density
     n0    = data["CR_energy_density"].v*(2-p)/(E_max**(2-p)-E_min**(2-p))
     K     = n0*(m_e*c**2)**(1-p)

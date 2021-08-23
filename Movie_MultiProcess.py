@@ -13,18 +13,18 @@ import time
 import os
 
 #Set the parameters
-Fields = {  'crht':              0,
-            'CR_energy_density': 0,
+Fields = {  'crht':              1,
+            'CR_energy_density': 1,
             'density':           0,
-            'pressure':          0,
-            'temperature':       0,
-            'csht':              0,
-            'mag_strength':      0,
-            'beta_B':            0,
-            'beta_CR':           0,
-            'beta_th':           0,
-            'cooling_time':      0,
-            'Sync':              1
+            'pressure':          1,
+            'temperature':       1,
+            'csht':              1,
+            'mag_strength':      1,
+            'beta_B':            1,
+            'beta_CR':           1,
+            'beta_th':           1,
+            'cooling_time':      1,
+            'Sync':              0
             }
 CMAP = 'algae' #'dusk'
 FPS = 10
@@ -37,7 +37,7 @@ Titles = ['CRp', 'CRe', 'CRpS', 'CReS']
 
 Start_Time = time.time()
 start_frame = 0
-end_frame = min(len(CRp),len(CRe), len(CRpS), len(CReS))
+end_frame = min(map(len, DataSet))
 n_thread = 10
 
 rc_context({'mathtext.fontset': 'stix'})
@@ -55,12 +55,12 @@ def Frame_In_Range(Start, End, Ds1, Ds2, Ds3, Ds4, Field, MAG):
                         cbar_location = "right",
                         cbar_mode = "single",
                         cbar_size = "3%",
-                        cbar_pad = "3%")
+                        cbar_pad  = "3%")
         
-        M.One_Plot(0, Ds1, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
-        M.One_Plot(1, Ds2, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
-        M.One_Plot(2, Ds3, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
-        M.One_Plot(3, Ds4, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Projection')
+        M.One_Plot(0, Ds1, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
+        M.One_Plot(1, Ds2, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
+        M.One_Plot(2, Ds3, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
+        M.One_Plot(3, Ds4, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
         grid[0].axes.set_title(Titles[0], fontsize=20)
         grid[1].axes.set_title(Titles[1], fontsize=20)
         grid[2].axes.set_title(Titles[2], fontsize=20)

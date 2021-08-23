@@ -29,8 +29,8 @@ Fields_dict = {
                 'beta_CR':           0,
                 'beta_th':           0,
                 'cooling_time':      0,
-                'Sync':              0,
-                'Xray_Emissivity':   1
+                'Sync':              1,
+                'Xray_Emissivity':   0
                 }
 Fields = [key for key in Fields_dict if Fields_dict[key]==1]
 orient = 'vertical'
@@ -54,11 +54,16 @@ def One_Axis(i, j, DS, Field, Frame, width=width, res=res, fig=fig, axes=axes, c
     Axis.xaxis.set_visible(False)
     Axis.yaxis.set_visible(False)
     Arr = np.array(frb[Field])
-    Arr[Arr==0] = 1e-99
+    Arr[Arr<1e-30] = 1e-30
     print(Arr)
     plots.append(Axis.imshow(Arr, norm=LogNorm()))
-    plots[-1].set_clim((M.Zlim(Field)[0], M.Zlim(Field)[1]))
+    '''
+    if Type == 'slice':
+        plots[-1].set_clim((M.Zlim(Field)[0], M.Zlim(Field)[1]))
+    else:
+        plots[-1].set_clim((M.Zlim_Projection(Field)[0], M.Zlim_Projection(Field)[1]))
     plots[-1].set_cmap("inferno")
+    '''
     if j == 0:
         Axis.text(0.05, 0.95, Titles[i], c='k', horizontalalignment='left', verticalalignment='top', transform=Axis.transAxes, fontsize=15)
     Axis.text(0.95, 0.95, r'${} Myr$'.format(Frames[j]*2), c='k', horizontalalignment='right', verticalalignment='top', transform=Axis.transAxes, fontsize=15)
@@ -66,6 +71,7 @@ def One_Axis(i, j, DS, Field, Frame, width=width, res=res, fig=fig, axes=axes, c
 Field = Fields[0]
 for i, DS in enumerate(DataSet):
     for j, Frame in enumerate(Frames):
+        #One_Axis(i, j, DS, Field, Frame, Type='slice')
         One_Axis(i, j, DS, Field, Frame, Type='proj')
 
 titles = [  
@@ -77,5 +83,5 @@ for p, cax, t in zip(plots, colorbars, titles):
     cbar = fig.colorbar(p, cax=cax, orientation=orient)
     cbar.set_label(t)
 # And now we're done!
-plt.tight_layout()
-fig.savefig("Time_Sequence.png")
+#plt.tight_layout()
+fig.savefig("Time_Sequence_{}.png".format(Field))

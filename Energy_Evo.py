@@ -43,6 +43,7 @@ OUT = Set_Table()
 def Frames_in_range(Frame1, Frame2, Ds, BubbleDef, OUT):
     for i in range(Frame1, Frame2):
         print("Making Plot: {}/{}".format(i+1,len(DataSet[0])))
+        #OUT = 
         OUT[1,i,0] = M.ECR_InBub(Ds[i], BubbleDef=BubbleDef)
         OUT[2,i,0] = M.ECR_tot(Ds[i])
         OUT[1,i,1] = M.Ek_InBub(Ds[i], BubbleDef=BubbleDef)

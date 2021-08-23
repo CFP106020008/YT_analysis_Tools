@@ -15,13 +15,13 @@ Titles = [r'$\mathrm{CRpS}$',r'$\mathrm{CReS}$']#,r'$\mathrm{CReS~0.01GeV}$']
 
 rc_context({'mathtext.fontset': 'stix'})
 
-width = (75, 'kpc')
+width = (100, 'kpc')
 res = [800, 800]
 
 Fields_dict = { 
                 'density':           0,
-                'temperature':       0,
-                'pressure':          1,
+                'temperature':       1,
+                'pressure':          0,
                 'CR_energy_density': 0,
                 'crht':              0,
                 'csht':              0,
