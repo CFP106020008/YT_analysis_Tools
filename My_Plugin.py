@@ -5,6 +5,10 @@ from yt.utilities.physical_constants import kb
 from yt.fields.api import ValidateParameter
 import os
 
+
+Myr2s = 3.1556926e13
+
+
 def Zlim(Field):
     ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
              'CR_energy_density':[1.e-10, 1.e-9],
@@ -20,7 +24,8 @@ def Zlim(Field):
              'beta_th': [1, 3],
              'cooling_time': [3.15e16, 3.17e16],
              'Sync': [1e-10, 1e-7],
-             'Xray_Emissivity': [4e-24, 3e-23]
+             'Xray_Emissivity': [4e-24, 3e-23],
+             'adiabatic_time': [-1e3, 1e3]
             }
     return ZLIMS[Field]
 
@@ -293,6 +298,33 @@ def PV_InBub(dataset, BubbleDef, radius=50):
 
 #=========================================================#
 
+def Bub_Volume(dataset, BubbleDef, radius=50):
+    ds  = dataset
+    sp  = ds.sphere(ds.domain_center, (radius, "kpc"))
+    Bub = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    V   = Bub.quantities.total_quantity("cell_volume")
+    return V
+
+#=========================================================#
+
+def Bub_Pressure(dataset, BubbleDef, radius=50):
+    ds  = dataset
+    sp  = ds.sphere(ds.domain_center, (radius, "kpc"))
+    Bub = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    P   = Bub.quantities.weighted_average_quantity("pressure", weight="cell_volume")
+    return P
+
+#=========================================================#
+
+def Bub_PCR(dataset, BubbleDef, radius=50):
+    ds  = dataset
+    sp  = ds.sphere(ds.domain_center, (radius, "kpc"))
+    Bub = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    PCR = Bub.quantities.weighted_average_quantity("CR_energy_density", weight="cell_volume")/3
+    return PCR
+
+#=========================================================#
+
 def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='inferno', Type='Slice'):
     ds = ts[frame]
     if Type == 'Projection':
@@ -361,9 +393,9 @@ def Sync_Emissivity(field, data, p=2.5):
     # Evolution of the energy range
     E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e5*MeV2erg)
     E_min = 1e3*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e3*MeV2erg)
-    print(beta)
-    print(Time(data.ds))
-    print(E_max, E_min)
+    #print(beta)
+    #print(Time(data.ds))
+    #print(E_max, E_min)
 
     # Number density
     n0    = data["CR_energy_density"].v*(2-p)/(E_max**(2-p)-E_min**(2-p))
@@ -382,10 +414,30 @@ yt.add_field(("gas", "Sync"),
 #=========================================================#
 
 def Sync_incell(field, data):
-    return data["Sync"]*data["cell_volume"]#*YTQuantity(1.,"cm**3")
+    return data["Sync"]*data["cell_volume"]
 yt.add_field(("gas", "Sync_incell"),
              function = Sync_incell, 
              units = "erg/s", 
+             sampling_type = "cell")
+
+#=========================================================#
+
+def Sync_InBub(dataset, BubbleDef, radius=50):
+    ds = dataset
+    sp = ds.sphere(ds.domain_center, (radius, "kpc"))
+    Bub = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    #Syn = Bub.quantities.weighted_average_quantity("Sync", weight="cell_volume")
+    Syn = Bub.quantities.total_quantity("Sync_incell")
+    print(Syn)
+    return Syn
+
+#=========================================================#
+
+def Sync_timescale(field, data):
+    return data["CR_energy_density"]/data["Sync"]
+yt.add_field(("gas", "Sync_timescale"),
+             function = Sync_timescale, 
+             units = "Myr", 
              sampling_type = "cell")
 
 #=========================================================#
@@ -395,4 +447,19 @@ def LR_Total(ds):
 
 #=========================================================#
 
+def adiabatic_time(field, data):
+    return 1/data["velocity_divergence"]
+yt.add_field(("gas", "adiabatic_time"),
+             function = adiabatic_time, 
+             units = "Myr", 
+             sampling_type = "local")
 
+
+def CR_Ratio(dataset, BubbleDef, radius=50):
+    ds  = dataset
+    sp  = ds.sphere(ds.domain_center, (radius, "kpc"))
+    Bub = ds.cut_region(sp, ["obj['cooling_time'] > {}".format(BubbleDef)])
+    P   = Bub.quantities.weighted_average_quantity("pressure", weight="cell_volume")
+    PCR = Bub.quantities.weighted_average_quantity("CR_energy_density", weight="cell_volume")/3
+    return PCR/P
+    

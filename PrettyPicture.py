@@ -20,13 +20,13 @@ res = [800, 800]
 
 Fields_dict = { 
                 'density':           0,
-                'temperature':       1,
+                'temperature':       0,
                 'pressure':          0,
                 'CR_energy_density': 0,
                 'crht':              0,
                 'csht':              0,
                 'mag_strength':      0,
-                'beta_th':           0,
+                'beta_th':           1,
                 'beta_B':            0,
                 'beta_CR':           0,
                 'cooling_time':      0,
@@ -36,7 +36,7 @@ Fields = [key for key in Fields_dict if Fields_dict[key]==1]
 orient = 'horizontal'
 fig, ax = plt.subplots(figsize=(6, 6)) 
 
-Frame = 25
+Frame = 30
 plots = []
 cmaps = [
          'inferno',
@@ -48,15 +48,15 @@ cmaps = [
 
 def One_Axis(i, j, DS, Field, Frame, width=width, res=res, fig=fig, ax=ax, plots=plots, CMAP="bds_highcontrast"):
     ds = DS[Frame]
-    sli = ds.slice(1, 0)
+    sli = ds.slice('x', 0.5)
     frb = sli.to_frb(width, res)
     Axis = ax
     Axis.xaxis.set_visible(False)
     Axis.yaxis.set_visible(False)
-    Arr = np.transpose(np.array(frb[Field]))
-    Arr[Arr==0] = 1e-99
+    Arr = np.array(frb[Field])
+    #Arr[Arr==0] = 1e-99
     IMG = ax.imshow(Arr, norm=LogNorm())
-    #IMG.set_clim(3.3e-10,5e-10)
+    IMG.set_clim(1,2)
     #IMG.set_clim(M.Zlim(Field)[0], M.Zlim(Field)[1])
     IMG.set_cmap(CMAP)
     #if j == 0:
