@@ -11,7 +11,7 @@ from mpl_toolkits.axes_grid1 import AxesGrid
 #Set the parameters
 Fields = {  'crht':              0,
             'CR_energy_density': 0,
-            'density':           0,
+            'density':           1,
             'pressure':          0,
             'temperature':       0,
             'csht':              0,
@@ -19,7 +19,7 @@ Fields = {  'crht':              0,
             'beta_B':            0,
             'beta_CR':           0,
             'beta_th':           0,
-            'cooling_time':      1
+            'cooling_time':      0
             }
 CRp, CRe, CRpS, CReS = M.Load_Simulation_Datas()
 CMAP = 'algae' #'dusk'

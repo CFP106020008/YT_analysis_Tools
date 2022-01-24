@@ -13,17 +13,17 @@ import time
 import os
 
 #Set the parameters
-Fields = {  'crht':              1,
+Fields = {  'crht':              0,
             'CR_energy_density': 1,
-            'density':           0,
+            'density':           1,
             'pressure':          1,
             'temperature':       1,
-            'csht':              1,
-            'mag_strength':      1,
-            'beta_B':            1,
-            'beta_CR':           1,
-            'beta_th':           1,
-            'cooling_time':      1,
+            'csht':              0,
+            'mag_strength':      0,
+            'beta_B':            0,
+            'beta_CR':           0,
+            'beta_th':           0,
+            'cooling_time':      0,
             'Sync':              0
             }
 CMAP = 'algae' #'dusk'
@@ -31,9 +31,10 @@ FPS = 10
 #===========================#
 
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CRp', 'CRe', 'CRpS', 'CReS']
+Datas_to_use = ['CRp', 'CRpS', 'CRe', 'CReS']
+#Datas_to_use = ['CRe_3E21E0', 'CRe_3E11E0', 'CRe_1E23E0', 'CRe_1E23E-1']
 DataSet = [Datas[i] for i in Datas_to_use]
-Titles = ['CRp', 'CRe', 'CRpS', 'CReS']
+#Titles = ['CRe_1E21E0', 'CRe_3E21E0', 'CRe_1E21E0', 'CRe_1E21E0']
 
 Start_Time = time.time()
 start_frame = 0
@@ -61,10 +62,10 @@ def Frame_In_Range(Start, End, Ds1, Ds2, Ds3, Ds4, Field, MAG):
         M.One_Plot(1, Ds2, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
         M.One_Plot(2, Ds3, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
         M.One_Plot(3, Ds4, i, Field=Field, fig=fig, grid=grid, mag=MAG, Type='Slice')
-        grid[0].axes.set_title(Titles[0], fontsize=20)
-        grid[1].axes.set_title(Titles[1], fontsize=20)
-        grid[2].axes.set_title(Titles[2], fontsize=20)
-        grid[3].axes.set_title(Titles[3], fontsize=20)
+        grid[0].axes.set_title(Datas_to_use[0], fontsize=20)
+        grid[1].axes.set_title(Datas_to_use[1], fontsize=20)
+        grid[2].axes.set_title(Datas_to_use[2], fontsize=20)
+        grid[3].axes.set_title(Datas_to_use[3], fontsize=20)
         #fig.text(0.5, 0.95, "$Time: {:03.0f} Myr$".format(M.Time(Ds1[i])), ha='center', va='top', fontsize=20)
         fig.text(0.5, 0.95, "$\mathrm{Time: }%3d \mathrm{ Myr}$" % M.Time(Ds1[i]), ha='center', va='top', fontsize=20)
         fig.savefig('./{}/{}_Frame={:03d}.png'.format(Field, Field, i))

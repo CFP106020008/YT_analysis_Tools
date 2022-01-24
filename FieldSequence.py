@@ -21,7 +21,7 @@ res = [500, 500]
 Fields_dict = { 
                 'density':           0,
                 'temperature':       1,
-                'pressure':          1,
+                'pressure':          0,
                 'CR_energy_density': 1,
                 'crht':              0,
                 'csht':              0,
@@ -30,6 +30,7 @@ Fields_dict = {
                 'beta_B':            0,
                 'beta_CR':           1,
                 'cooling_time':      0,
+                'Xray_Emissivity':   1,
                 'Sync':              0
                 }
 Fields = [key for key in Fields_dict if Fields_dict[key]==1]
@@ -39,46 +40,56 @@ fig, axes, colorbars = get_multi_plot(len(Fields), len(DataSet), colorbar=orient
 cmaps = [
          'gist_heat',
          'inferno',
-         'inferno', 
          'Blues',
-         'Blues'
+         'Blues',
+         'gray'
          ]
 
-Frame = 35
+Frame = 30
 
 plots = []
 
-def One_Axis(i, j, DS, Field, Frame, width=width, res=res, fig=fig, axes=axes, colorbars=colorbars, plots=plots, CMAP="bds_highcontrast"):
+def One_Axis(i, j, DS, Field, Frame, width=width, res=res, fig=fig, axes=axes, colorbars=colorbars, plots=plots, CMAP="bds_highcontrast", Type='slice'):
     ds = DS[Frame]
-    sli = ds.slice(1, 0)
-    frb = sli.to_frb(width, res)
+    if Type == 'slice':
+        Plot = yt.SlicePlot(ds, 'x', fields=Field)
+    else:
+        Plot = yt.ProjectionPlot(ds, 'x', fields=Field)
+
+    frb  = Plot.data_source.to_frb(width, res)
     Axis = axes[i][j]
     Axis.xaxis.set_visible(False)
     Axis.yaxis.set_visible(False)
-    Arr = np.transpose(np.array(frb[Field]))
-    Arr[Arr<1e-20] = 1e-20
-    plots.append(Axis.imshow(Arr, 
-                             norm=LogNorm(),
-                             vmin=M.Zlim(Field)[0], 
-                             vmax=M.Zlim(Field)[1], 
-                             cmap=CMAP))
+    Arr = np.array(frb[Field])
+    if Type == 'slice':
+        Arr[Arr < M.Zlim(Field)[0]] = M.Zlim(Field)[0]
+    else:
+        Arr[Arr < M.Zlim_Projection(Field)[0]] = M.Zlim_Projection(Field)[0]
+    plots.append(Axis.imshow(Arr, norm=LogNorm(), cmap=CMAP))
+    if Type == 'slice':
+        plots[-1].set_clim((M.Zlim(Field)[0], M.Zlim(Field)[1]))
+    else:
+        plots[-1].set_clim((M.Zlim_Projection(Field)[0], M.Zlim_Projection(Field)[1]))
     if j == 0:
         Axis.text(0.05, 0.95, Titles[i], c='w', horizontalalignment='left', verticalalignment='top', transform=Axis.transAxes, fontsize=15)
 
 for i, ds in enumerate(DataSet):
     for j, Field in enumerate(Fields):
-        One_Axis(i, j, ds, Field, Frame, CMAP=cmaps[j])
+        if Field == 'Xray_Emissivity':
+            One_Axis(i, j, ds, Field, Frame, CMAP=cmaps[j], Type='proj')
+        else:
+            One_Axis(i, j, ds, Field, Frame, CMAP=cmaps[j])
 
 titles = [  
             r'$\mathrm{Temperature}\ (\mathrm{K})$',
-            r'$\mathrm{Pressure}\ (\mathrm{dyne\ cm^{-2}})$',
+            #r'$\mathrm{Pressure}\ (\mathrm{dyne\ cm^{-2}})$',
             r'$\mathrm{CR~energy~density}\ (\mathrm{erg\ cm^{-3}})$',
             r'$\mathrm{\beta_{th}}$', 
             r'$\mathrm{\beta_{CR}}$',
+            r'$\mathrm{Proj.~\epsilon_{ff}}\ (\mathrm{erg~ s^{-1} cm^{-2}})$',
             ]
 
 for p, cax, t, Field in zip(plots, colorbars, titles, Fields):
-    #print(p, cax, t, Field)
     cbar = fig.colorbar(p, 
                         cax=cax, 
                         orientation=orient, 
@@ -86,10 +97,6 @@ for p, cax, t, Field in zip(plots, colorbars, titles, Fields):
                         #format=ticker.LogFormatterSciNotation()
                         )#, ticks=M.Zlim(Field))
     cbar.set_label(t)
-    #cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=45)
-    #cbar.ax.xaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
-    #cbar.update_normal(p)
-    #cbar.ax.set_xticklabels([])
 
 # And now we're done!
 fig.savefig("Field_Sequence.png", dpi=300)

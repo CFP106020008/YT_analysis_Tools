@@ -11,7 +11,7 @@ import My_Plugin as M
 
 #Set the parameters
 Datas = M.Load_Simulation_Datas()
-Datas_to_use = ['CRe', 'CReS'] #, 'CReS_RC', 'CReS_SE', 'CReS_SE_Small', 'CRp', 'CRe', , 'CRpS''CReS_SE_CB_Small']
+Datas_to_use = ['CReS'] #, 'CRe_1E23E-1']
 DataSet = [Datas[i] for i in Datas_to_use]
 
 Frame = 51
@@ -43,7 +43,6 @@ OUT = Set_Table()
 def Frames_in_range(Frame1, Frame2, Ds, BubbleDef, OUT):
     for i in range(Frame1, Frame2):
         print("Making Plot: {}/{}".format(i+1,len(DataSet[0])))
-        #OUT = 
         OUT[1,i,0] = M.ECR_InBub(Ds[i], BubbleDef=BubbleDef)
         OUT[2,i,0] = M.ECR_tot(Ds[i])
         OUT[1,i,1] = M.Ek_InBub(Ds[i], BubbleDef=BubbleDef)

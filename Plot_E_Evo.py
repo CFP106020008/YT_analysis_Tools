@@ -6,7 +6,7 @@ from os.path import isfile, join
 from matplotlib import rc_context
 import tqdm as T
 
-path = "/data/yhlin/E_EVO"
+path = "/data/yhlin/E_EVO/Final"
 files = [f for f in listdir(path) if isfile(join(path, f))]
 DataSet = [np.load(join(path, i)) for i in files]
 Names = ['_'.join(''.join(f.split('.')[:-1]).split('_')[1:]) for f in files]

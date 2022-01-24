@@ -32,7 +32,7 @@ def Zlim(Field):
 def Zlim_Projection(Field):
     ZLIMS = {'Heating/Cooling':[1e-1, 1e1],
              'CR_energy_density':[1e9, 1e17],
-             'density':[1e-2, 1e-1],
+             'density':[2e-2, 6e-2],
              'temperature':[1e7, 1e9],
              'crht':[1e-29, 1e-25],
              'pressure':[1e-11, 1e-8],
@@ -43,7 +43,7 @@ def Zlim_Projection(Field):
              'beta_th': [1, 1e3],
              'cooling_time': [3.15e16, 3.17e16],
              'Sync': [1e-30, 1e-10],
-             'Xray_Emissivity': [1e-10, 1e-7]
+             'Xray_Emissivity': [2e-3, 3e-2]
             }
     return ZLIMS[Field]
 
@@ -52,34 +52,48 @@ def Zlim_Projection(Field):
 # Loading all the file folders
 def Load_Simulation_Datas():
     Folder_ps = "/data/yhlin/Final_Sims/CRp_Streaming/crbub_hdf5_plt_cnt_*"
-    Folder_es = "/data/yhlin/Final_Sims/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*"
+    Folder_es = "/data/yhlin/Final_Sims/CReS_10MyrCool/crbub_hdf5_plt_cnt_*"
     Folder_p  = "/data/yhlin/Final_Sims/CRp_NS/crbub_hdf5_plt_cnt_*"
     Folder_e  = "/data/yhlin/Final_Sims/CRe/crbub_hdf5_plt_cnt_*"
     CRp = yt.load(Folder_p) #Proton Jet dataset
     CRe = yt.load(Folder_e) #Electron Jet dataset
     CRpS = yt.load(Folder_ps) #Proton Jet dataset
     CReS = yt.load(Folder_es) #Electron Jet dataset
-    CReS_RC = yt.load("/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*")
-    CReS_SE = yt.load("/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*")
-    CReS_SE_Small = yt.load("/data/yhlin/CReS_Emin=1e-2/crbub_hdf5_plt_cnt_*")
-    CReS_SE_CB_Emin100MeV = yt.load("/data/yhlin/CReS_SE_ConstantB/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
-    CReS_SE_CB_Emin1GeV = yt.load("/data/yhlin/Final_Sims/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
+    #CReS_RC = yt.load("/data/yhlin/CReS_RC/crbub_hdf5_plt_cnt_*")
+    #CReS_SE = yt.load("/data/yhlin/CReS_SpectrumEvo/crbub_hdf5_plt_cnt_*")
+    #CReS_SE_Small = yt.load("/data/yhlin/CReS_Emin=1e-2/crbub_hdf5_plt_cnt_*")
+    #CReS_SE_CB_Emin100MeV = yt.load("/data/yhlin/CReS_SE_ConstantB/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
+    #CReS_SE_CB_Emin1GeV = yt.load("/data/yhlin/Final_Sims/CReS_SE_CB_Emin1GeV/crbub_hdf5_plt_cnt_*") # Spectral evolution with constant B field
+    #CRe_Expansion = yt.load("/data/yhlin/CRe_Expansion/crbub_hdf5_plt_cnt_*") # Detail process of bubble inflation
+    CRe_1E21E0 = yt.load("/data/yhlin/CRe_EmaxEminConvergence/1E21E0/crbub_hdf5_plt_cnt_*") # Convergence test on Emax and Emin
+    CRe_1E23E0 = yt.load("/data/yhlin/CRe_EmaxEminConvergence/1E23E0/crbub_hdf5_plt_cnt_*") # Convergence test on Emax and Emin
+    CRe_3E11E0 = yt.load("/data/yhlin/CRe_EmaxEminConvergence/3E11E0/crbub_hdf5_plt_cnt_*") # Convergence test on Emax and Emin
+    CRe_3E21E0 = yt.load("/data/yhlin/CRe_EmaxEminConvergence/3E21E0/crbub_hdf5_plt_cnt_*") # Convergence test on Emax and Emin
+    CRe_1E23E_1 = yt.load("/data/yhlin/CRe_EmaxEminConvergence/1E23E-1/crbub_hdf5_plt_cnt_*") # Convergence test on Emax and Emin
+    CReS_HighFPS = yt.load("/data/yhlin/CReS_HighFPS/crbub_hdf5_plt_cnt_*") # Convergence test on Emax and Emin
     Datas = {'CRp'          : CRp,
              'CRe'          : CRe,
              'CRpS'         : CRpS,
              'CReS'         : CReS,
-             'CReS_RC'      : CReS_RC,
-             'CReS_SE'      : CReS_SE,
-             'CReS_SE_Small': CReS_SE_Small,
-             'CReS_SE_CB_Small'   : CReS_SE_CB_Emin100MeV,
-             'CReS_SE_CB_Large'   : CReS_SE_CB_Emin1GeV
+             #'CReS_RC'      : CReS_RC,
+             #'CReS_SE'      : CReS_SE,
+             #'CReS_SE_Small': CReS_SE_Small,
+             #'CReS_SE_CB_Small'   : CReS_SE_CB_Emin100MeV,
+             #'CReS_SE_CB_Large'   : CReS_SE_CB_Emin1GeV,
+             #'CRe_Expansion': CRe_Expansion,
+             'CRe_1E21E0': CRe_1E21E0,
+             'CRe_1E23E0': CRe_1E23E0,
+             'CRe_3E11E0': CRe_3E11E0,
+             'CRe_3E21E0': CRe_3E21E0,
+             'CRe_1E23E-1': CRe_1E23E_1,
+             'CReS_HighFPS': CReS_HighFPS
             }
     return Datas
 
 #=========================================================#
 
 def Load_E_EVO_Data():
-    path = "/data/yhlin/E_EVO"
+    path = "/data/yhlin/E_EVO/Final"
     files = [f for f in os.listdir(path) if (os.path.isfile(os.path.join(path, f)) and f.endswith(".npy"))]
     DataSet = [np.load(os.path.join(path, i), allow_pickle=True) for i in files]
     Names = ['_'.join(''.join(f.split('.')[:-1]).split('_')[1:]) for f in files]
@@ -187,7 +201,6 @@ yt.add_field(function = beta_th,
              sampling_type = "cell")
 
 #=========================================================#
-
 # Kinetic energy in cell
 def _ek_incell(field, data):
     vx = data[('flash', 'velx')]#*yt.YTQuantity(1,"cm/s")
@@ -198,7 +211,6 @@ yt.add_field(function = _ek_incell,
              units = "erg", 
              name = "Kinetic_Energy",
              sampling_type = "cell")
-
 #=========================================================#
 
 # Kinetic energy in cell
@@ -228,13 +240,19 @@ yt.add_field(   ("gas","CR_Heating"),
                 sampling_type = "cell")
 
 #=========================================================#
-
 def Xray_Emissivity(field, data):
-    return data["density"]**2*data["temperature"]**0.5*yt.YTQuantity(1,"erg/s*cm**3/g**2/K**0.5")
+    mu = 0.61 # assuming fully ionized gas
+    mue = 1.18
+    mp = 1.67e-24*YTQuantity(1.,"g")
+    ne = data["density"]/mue/mp
+    n = data["density"]/mu/mp
+    T = data["temp"].in_units('K')
+    return 3e-27*T**0.5*ne**2*yt.YTQuantity(1,"erg/s*cm**3/K**0.5")
 yt.add_field(("gas","Xray_Emissivity"), 
              function = Xray_Emissivity, 
              units="erg/s/cm**3",
              sampling_type = "cell")
+#yt.add_xray_emissivity_field(ds, 0.5, 2)
 
 #=========================================================#
 
@@ -329,10 +347,10 @@ def One_Plot(i, ts, frame, Field, fig, grid, mag=False, vel=False, CMAP='inferno
     ds = ts[frame]
     if Type == 'Projection':
         p = yt.ProjectionPlot(ds, 
-                         'x', 
-                         Field, 
-                         width=(100, 'kpc')
-                         ).set_cmap(field = Field, cmap=CMAP)
+                              'x', 
+                              Field, 
+                              width=(100, 'kpc')
+                              ).set_cmap(field = Field, cmap=CMAP)
         #p.set_zlim(Field, Zlim_Projection(Field)[0], Zlim_Projection(Field)[1])
     else:
         p = yt.SlicePlot(ds, 

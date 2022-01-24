@@ -4,6 +4,8 @@ import yt.units as u
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib import rc_context
+import matplotlib
+matplotlib.use('pdf')
 from mpl_toolkits.axes_grid1 import AxesGrid
 import My_Plugin as M
 from matplotlib.animation import FuncAnimation
