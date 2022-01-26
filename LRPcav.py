@@ -60,18 +60,12 @@ ax.scatter(Proton_LR.loc[::5,'CRp (W/Hz)']/4/np.pi,  E_Bub_All[2][::5]/1e7/(Myr2
 ax.scatter(Proton_LR.loc[::5,'CRpS (W/Hz)']/4/np.pi, E_Bub_All[3][::5]/1e7/(Myr2s*t[::5]*2), c=t[::5], cmap=NRed, label=Datas_to_use[3], marker='^')
 
 
-# Observation datas from Ineson2017.
-'''
-Ineson2017 = pd.read_csv('./Obs_Data/Ineson2017.csv')
-ax.scatter(x = 10**Ineson2017['log10L151'], y = Ineson2017['Qjet']*1e44/1e7, marker='*')
-ax.errorbar(x = 10**Ineson2017['log10L151'], 
-            y = Ineson2017['Qjet']*1e44/1e7,
-            yerr = Ineson2017['Qjet_Error']*1e44/1e7,
-            ls = 'none')
-'''
-# Observation datas from Crotson2017.
-Crotson2017 = pd.read_excel('./Obs_Data/Crotson2017.xlsx')
-ax.scatter(x = Crotson2017['L151MHz(W/Hz/sr)'], y = Crotson2017['Qjet(W)'], marker = '+')
+# Observation datas from Crotson2018.
+Croston2018 = pd.read_excel('./Obs_Data/Croston2018-all.xlsx')
+B08 = Croston2018[Croston2018["Source"]=='B08']
+Else = Croston2018[Croston2018["Source"]!='B08']
+ax.scatter(x = B08['L151(W/Hz/sr)'],  y = B08['Q_jet(W)'],  marker = '+', c='gray')
+ax.scatter(x = Else['L151(W/Hz/sr)'], y = Else['Q_jet(W)'], marker = '+', c='lightgray')
 
 ax.set_xlabel(r"$L_{151~MHz}~(W~Hz^{-1}~sr^{-1})$")
 ax.set_ylabel(r"$Q_{jet}~(W)$")
