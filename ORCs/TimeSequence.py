@@ -14,11 +14,15 @@ from matplotlib import rc_context
 #yt.enable_parallelism()
 
 Datas = Load_Simulation_Datas()
-Datas_to_use = ['CRpS', 
-                'ORC_M13_P1_D1', 
-                'ORC_M13_P1_D5',
-                'ORC_M12_P1_D1', 
-                'ORC_M12_P1_D5'
+Datas_to_use = [#'CRpS', 
+                #'ORC_M13_P1_D1', 
+                #'ORC_M13_P1_D5',
+                'ORC_M12_P1_D10',
+                'ORC_M12_P1_D5',
+                #'ORC_M12_P1_D1',
+                #'ORC_M12_P1_D5_200'
+                #'ORC_M12_P0_D5',
+                #'ORC_M12_P0_D10'
                 ]
 DataSet = [Datas[i] for i in Datas_to_use]
 Titles = Datas_to_use
@@ -26,15 +30,15 @@ Titles = Datas_to_use
 
 rc_context({'mathtext.fontset': 'stix'})
 
-width = (500, 'kpc')
+width = (300, 'kpc')
 res = [500, 500]
-TYPE = 'proj'
-#TYPE = 'slice'
+#TYPE = 'proj'
+TYPE = 'slice'
 theta = 20*np.pi/180 #deg
 phi = 0*np.pi/180
-Frames = [0,10,20,30,40,50]
-#Frames = [0,10,20,30,40,45]
-#Frames = [0]
+#Frames = [0,20,40,56]
+#Frames = [0,20,40,60,80,100]
+Frames = [0,10,20,30,40]
 
 x = np.sin(theta)*np.cos(phi)
 y = np.sin(theta)*np.sin(phi)
@@ -42,7 +46,7 @@ z = np.cos(theta)
 normal = np.array([x,y,z])
 
 Fields_dict = { 
-                'density':           0,
+                'density':           1,
                 'temperature':       0,
                 'pressure':          0,
                 'velocity_magnitude':0,
@@ -56,7 +60,7 @@ Fields_dict = {
                 'cooling_time':      0,
                 'Sync':              0,
                 'Xray_Emissivity':   0,
-                'Fake_gamma':        1
+                'Fake_gamma':        0
                 }
 Fields = [key for key in Fields_dict if Fields_dict[key]==1]
 orient = 'vertical'
@@ -90,6 +94,7 @@ def One_Axis(i, j, DS, Field, Frame, plots, fig, axes, colorbars, width=width, r
     #plots.append(Axis.imshow(Arr, norm=LogNorm(np.max(Arr)/1e3, np.max(Arr))))
     if Field == 'Fake_gamma':
         plots.append(Axis.imshow(Arr, norm=Normalize(Min, Max)))
+        #plots.append(Axis.imshow(Arr, norm=LogNorm()))
     else: 
         plots.append(Axis.imshow(Arr, norm=LogNorm()))
         if Type == 'slice':
@@ -99,6 +104,8 @@ def One_Axis(i, j, DS, Field, Frame, plots, fig, axes, colorbars, width=width, r
     plots[-1].set_cmap("inferno")
     if j == 0:
         Axis.text(0.05, 0.95, Titles[i], c='w', horizontalalignment='left', verticalalignment='top', transform=Axis.transAxes, fontsize=15)
+    if (i == len(DataSet)-1) and j == 0:
+        Axis.text(0.05, 0.05, 'Box size: ' + str(width[0]) + ' kpc', c='w', horizontalalignment='left', verticalalignment='bottom', transform=Axis.transAxes, fontsize=10)
     Axis.text(0.95, 0.95, r'{:.0f} Myr'.format(M.Time(ds)), c='w', horizontalalignment='right', verticalalignment='top', transform=Axis.transAxes, fontsize=15)
 
 def main():

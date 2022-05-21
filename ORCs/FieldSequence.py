@@ -20,19 +20,21 @@ width = (100, 'kpc')
 res = [500, 500]
 
 Fields_dict = { 
-                'density':           0,
-                'temperature':       1,
+                'density':           1,
+                'temperature':       0,
                 'pressure':          0,
-                'CR_energy_density': 1,
+                'velocity_magnitude':0,
+                'CR_energy_density': 0,
                 'crht':              0,
                 'csht':              0,
                 'mag_strength':      0,
-                'beta_th':           1,
                 'beta_B':            0,
-                'beta_CR':           1,
+                'beta_CR':           0,
+                'beta_th':           0,
                 'cooling_time':      0,
-                'Xray_Emissivity':   1,
-                'Sync':              0
+                'Sync':              0,
+                'Xray_Emissivity':   0,
+                'Fake_gamma':        0
                 }
 Fields = [key for key in Fields_dict if Fields_dict[key]==1]
 orient = 'horizontal'
