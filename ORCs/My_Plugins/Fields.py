@@ -2,7 +2,7 @@
 import yt
 import numpy as np
 from yt import YTQuantity
-from yt.utilities.physical_constants import kb
+from yt.utilities.physical_constants import kb, mp
 from yt.fields.api import ValidateParameter
 import os
 
@@ -13,6 +13,15 @@ def _mag_strength(field, data):
 yt.add_field(   ("gas","mag_strength"), 
                 function=_mag_strength, 
                 units="gauss",
+                sampling_type = "cell")
+
+#=========================================================#
+
+def u_mag(field, data):
+    return (data["magx"]**2 + data["magy"]**2 + data["magz"]**2)/8/np.pi
+yt.add_field(   ("gas","u_mag"), 
+                function=u_mag, 
+                units="erg/cm**3",
                 sampling_type = "cell")
 
 #=========================================================#
@@ -138,7 +147,7 @@ yt.add_field(function = _PV_incell,
 
 def Heat_Cool(field, data):
     return (data["crht"]+data["csht"])*yt.YTQuantity(1,"erg/s/cm**3")/data["cooling_rate"]
-yt.add_field(   ("gas","Heating/Cooling"), 
+yt.add_field(   ("gas","Heating_Cooling_Ratio"), 
                 function = Heat_Cool, 
                 units="",
                 sampling_type = "cell")
@@ -311,6 +320,60 @@ def Sync_Emissivity(field, data, p=2.5):
     MeV2erg = 1.6e-6 # Coverting factor
     
     # Parameters
+    nu    = 1.4e9 # Hz, frequency of the observation
+    #nu    = 1.51e8 # Hz, frequency of the observation
+    B     = 1e-6 # G
+    Urad  = 4.2e-13 # erg/cm**3 energy density of CMB photon at z=0
+    
+    # Derived quantities
+    Ub    = B**2/(8*np.pi) # erg/cm**3
+    Utot  = Ub + Urad
+    beta  = 4/3*sigma_T/(m_e**2*c**3)*Utot
+    nu_L  = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
+    
+    # Evolution of the energy range
+    E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e5*MeV2erg)
+    E_min = 1e3*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e3*MeV2erg)
+    #print(beta)
+    #print(Time(data.ds))
+    #print(E_max, E_min)
+
+    # Number density
+    n0    = data["CR_energy_density"].v*(2-p)/(E_max**(2-p)-E_min**(2-p))
+    K     = n0*(m_e*c**2)**(1-p)
+    Constants = (3*sigma_T*c*Ub*K)/(16*np.pi**1.5*nu_L)
+    Frequency = (nu/nu_L)**((1-p)/2)
+    Angle = 3**(p/2)*(2.25/p**2.2+0.105)
+    epsilon_nu  = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3/Hz")
+    return epsilon_nu
+
+yt.add_field(("gas", "Sync"),
+             function = Sync_Emissivity, 
+             units = "erg/s/cm**3/Hz", 
+             sampling_type = "cell")
+
+#=========================================================#
+
+def j_nu_Sync(field, data):
+    return data["Sync_SimMag"]/YTQuantity(4*np.pi,"sr")
+yt.add_field(("gas", "j_nu_Sync"),
+             function = j_nu_Sync, 
+             units = "erg/s/cm**3/Hz/sr", 
+             sampling_type = "cell")
+
+#=========================================================#
+def Hadronic_Synchrotron(field, data, p=2.5):
+    # This is suppose to represent what is the maximum synchrotron intensity
+    # one can have when considering all the energy involved in secondary
+    # Constants
+    Myr2s = 3.1556926e13
+    q_e   = 4.80e-10 # Fr (e.s.u)
+    m_e   = 9.11e-28 # g
+    sigma_T = 6.65e-25 # Thomson Cross Section
+    c     = 29979245800. # cm/s
+    MeV2erg = 1.6e-6 # Coverting factor
+    
+    # Parameters
     nu    = 1.51e8 # Hz, frequency of the observation
     B     = 1e-6 # G
     Urad  = 4.2e-13 # erg/cm**3 energy density of CMB photon at z=0
@@ -337,10 +400,10 @@ def Sync_Emissivity(field, data, p=2.5):
     epsilon_nu  = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3")
     return epsilon_nu
 
-yt.add_field(("gas", "Sync"),
-             function = Sync_Emissivity, 
-             units = "erg/s/cm**3", 
-             sampling_type = "cell")
+#yt.add_field(("gas", "Sync"),
+#             function = Sync_Emissivity, 
+#             units = "erg/s/cm**3", 
+#             sampling_type = "cell")
 
 #=========================================================#
 
@@ -373,14 +436,77 @@ yt.add_field(("gas", "Sync_timescale"),
 
 #=========================================================#
 
+def Sync_Emissivity_SimMag(field, data, p=2.5):
+    
+    # Constants
+    Myr2s = 3.1556926e13
+    q_e   = 4.80e-10 # Fr (e.s.u)
+    m_e   = 9.11e-28 # g
+    sigma_T = 6.65e-25 # Thomson Cross Section
+    c     = 29979245800. # cm/s
+    MeV2erg = 1.6e-6 # Coverting factor
+    
+    # Parameters
+    nu    = 1.51e8 # Hz, frequency of the observation
+    
+    # Derived quantities
+    Ub    = np.array(data["u_mag"])
+    Urad  = 4.2e-13 # erg/cm**3 energy density of CMB photon at z=0
+    Utot  = Ub + Urad
+    beta  = 4/3*sigma_T/(m_e**2*c**3)*Utot
+    B     = np.array(data["mag_strength"])
+    nu_L  = q_e*B/(2*np.pi*m_e*c) # Larmor frequency
+    
+    # Evolution of the energy range
+    E_max = 1e5*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e5*MeV2erg)
+    E_min = 1e3*MeV2erg / (1 + beta*Time(data.ds)*Myr2s*1e3*MeV2erg)
+
+    # Number density
+    n0    = data["CR_energy_density"].v*(2-p)/(E_max**(2-p)-E_min**(2-p))
+    K     = n0*(m_e*c**2)**(1-p)
+    Constants = (3*sigma_T*c*Ub*K)/(16*np.pi**1.5*nu_L)
+    Frequency = (nu/nu_L)**((1-p)/2)
+    Angle = 3**(p/2)*(2.25/p**2.2+0.105)
+    epsilon_nu  = Constants*Frequency*Angle*YTQuantity(1.,"erg/s/cm**3/Hz")
+    return epsilon_nu
+
+yt.add_field(("gas", "Sync_SimMag"),
+             function = Sync_Emissivity_SimMag, 
+             units = "erg/s/cm**3/Hz", 
+             sampling_type = "cell")
+
+#=========================================================#
+
+#def Fake_gamma(field, data):
+#    return data["CR_energy_density"]*data["dens"]**2*data["mag_strength"]**2
 def Fake_gamma(field, data):
-    return data["CR_energy_density"]*data["dens"]*data["mag_strength"]**2
+    return data['crht']*data['u_mag']
 yt.add_field(("gas", "Fake_gamma"),
              function = Fake_gamma, 
-             units = "erg*g/cm**6*gauss**2", 
+             units = "erg/cm**3", 
              #units = "erg*g/cm**6", 
              sampling_type = "cell")
 
+#=========================================================#
+
+def Fake_gamma_electron(field, data):
+    return data["CR_energy_density"]*data["u_mag"]
+yt.add_field(("gas", "Fake_gamma_electron"),
+             function = Fake_gamma_electron, 
+             units = "erg/cm**3*gauss**2", 
+             #units = "erg*g/cm**6", 
+             sampling_type = "cell")
+
+#=========================================================#
+#
+#def Sec_Sync(field, data):
+#    return data["crht"]*data["mag_strength"]**2/6
+#yt.add_field(("gas", "Fake_gamma"),
+#             function = Fake_gamma, 
+#             units = "erg*g/cm**6*gauss**2", 
+#             #units = "erg*g/cm**6", 
+#             sampling_type = "cell")
+#
 #=========================================================#
 
 def LR_Total(ds):
@@ -403,3 +529,16 @@ def CR_Ratio(dataset, BubbleDef, radius=50):
     P   = Bub.quantities.weighted_average_quantity("pressure", weight="cell_volume")
     PCR = Bub.quantities.weighted_average_quantity("CR_energy_density", weight="cell_volume")/3
     return PCR/P
+
+#=========================================================#
+
+def Electron_Number_Density(field, data): # Assuming fully ionized hydrogen
+    return data["density"]/mp
+yt.add_field(("gas", "n_e"),
+             function = Electron_Number_Density, 
+             units = "1/cm**3", 
+             sampling_type = "cell")
+
+#=========================================================#
+
+
